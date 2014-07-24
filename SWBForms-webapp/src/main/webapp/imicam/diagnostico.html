@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<!-- saved from url=(0043)http://getbootstrap.com/examples/dashboard/ -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="">
+        <meta name="author" content="">
+
+        <title>Dashboard Template for Bootstrap</title>
+
+        <!-- Bootstrap core CSS -->
+        <link href="/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+        <!-- Custom styles for this template -->
+        <link href="http://getbootstrap.com/examples/dashboard/dashboard.css" rel="stylesheet">
+
+        <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+        <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+        <script src="css/ie-emulation-modes-warning.js"></script>
+
+        <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+        <script src="css/ie10-viewport-bug-workaround.js"></script>
+
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+          <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+          <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+        <![endif]-->
+        <style id="holderjs-style" type="text/css"></style>
+
+        <link href="/swbforms/css/swbf.css" rel="stylesheet" type="text/css" />
+        <script type="text/javascript" src="/swbforms/js/swbf.js" ></script>     
+        <style>
+            *, *:before, *:after {
+                -webkit-box-sizing: border-box;
+                -moz-box-sizing: border-box;
+                box-sizing: content-box;
+            }
+        </style>
+    </head>
+
+    <body>
+        <script type="text/javascript">
+            swbf.initPlatform("datasources.js");
+        </script>  
+
+        <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="/imicam">IMICAM</a>
+                </div>
+                <div class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav navbar-right">
+                        <li><a href="diagnostico.html">Iniciar Diagnóstico</a></li>
+                        <li><a href="reporte.html">Reporte</a></li>
+                        <li><a href="http://getbootstrap.com/examples/dashboard/#">Acerca de</a></li>
+                        <li><a href="http://getbootstrap.com/examples/dashboard/#">Ayuda</a></li>
+                        <li> </li>
+                    </ul>           
+                    <ul class="nav navbar-nav navbar-right">
+                        <li> </li>
+                    </ul>    
+                    <!--                    
+                                        <form class="navbar-form navbar-right">
+                                            <input type="text" class="form-control" placeholder="Search...">
+                                        </form>
+                    -->
+                </div>
+            </div>
+        </div>
+
+        <div class="container-fluid">
+            <div class="row">
+                <div class="main">
+                    <h1 class="page-header">Diagnóstico Paramétrico</h1>
+                    <div>
+                        <script type="text/javascript">
+                            swbf.createForm(
+                            {title: "Datos Generales", width: "95%", height: "70%", numCols:2, colWidths: [250, "*"], showTabs:false,
+                            fields: [
+                                {defaultValue:"Datos Generales", type:"section", sectionExpanded:true, itemIds: ["nombreEmpresario", "nombreEmpresa", "rfc", "email", "telefono"] },
+                                {name: "nombreEmpresario", width:300},
+                                {name: "nombreEmpresa", width:300},
+                                {name: "rfc", },
+                                {name: "email", width:300},
+                                {name: "telefono", },
+                                {defaultValue:"Mercadotecnia", disabled:false, type:"section", sectionExpanded:true, itemIds: ["1_1","1_1_1", "1_1_2"] },
+                                {name: "1_1", defaultValue:"1.1 Modernizacion del punto de venta: (1:Mal / Nunca,  2:Regular / Algunas Veces,  3:Bien / Casi Siempre,  4:Muy Bien / Siempre)", type:"Header"},
+                                {name: "1_1_1", },
+                                {name: "1_1_2", },
+                            ],
+                            }, null, "ParamDiag");
+                        </script>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bootstrap core JavaScript
+        ================================================== -->
+        <!-- Placed at the end of the document so the pages load faster -->
+        <script src="css/jquery.min.js"></script>
+        <script src="css/bootstrap.min.js"></script>
+        <script src="css/docs.min.js"></script>
+
+    </body>
+</html>
