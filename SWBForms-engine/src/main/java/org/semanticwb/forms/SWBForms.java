@@ -77,7 +77,7 @@ public class SWBForms
         {
             //Carga Script de inicializacion
             FileInputStream in=new FileInputStream(f);
-            InputStreamReader r=new InputStreamReader(in);            
+            InputStreamReader r=new InputStreamReader(in,"UTF8");            
             engine.eval(r);                                
         } 
         return engine;
