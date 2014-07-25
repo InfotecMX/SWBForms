@@ -7,13 +7,17 @@ var swbf = {
         {operationType: "add", dataProtocol: "postMessage"},
         {operationType: "update", dataProtocol: "postMessage"},
         {operationType: "remove", dataProtocol: "postMessage"},
+        {operationType: "validate", dataProtocol: "postMessage"},
     ],
     dataSources: {},                    //Datasources
     fieldProcesors:{},                  //Procesadores de field elements
     validators:{},                      //Validator templates
     dataServices:{},                        //Servicios    
+    dataProcessors:{},                        //Servicios      
     
-    dataSourceScriptPath:"",    
+    dsCounter:0,                        //contador incremental para IDs de datasources 
+    
+    dataSourceScriptPath:"",            //ruta de datasource.js
     
     //Metodos Internos
     
@@ -374,7 +378,7 @@ var swbf = {
             {
                 var link=links[x];
                 
-                var ds = swbf.createDataSource(link.dataSource);       
+                var ds = swbf.createDataSource(link.dataSource,true);       
                                 
                 if(link.stype==="subForm")
                 {
@@ -385,8 +389,10 @@ var swbf = {
                         titleAlign : "right",
                         disabled : false,
                         dataSource: ds,
-                        fields:link.fields
+                        fields:link.fields,
+                        values:link.values,
                     });
+                    sform.tindex=form.tindex;
 
                     var spane=isc.VStack.create({
                         membersMargin: 10,
@@ -418,6 +424,8 @@ var swbf = {
                         dataSource: ds,
                         fields:link.fields
                     });
+                    
+                    sform.tindex=form.tindex+1;
                     
                     var spane=isc.VStack.create({
                         members: [sform]
@@ -460,13 +468,14 @@ var swbf = {
         isc.warn(txt);
         if(ferr!=null)
         {
-            if( swbf.findObject(swbf.submited.ID+"Tabs")){
+            var tabs=swbf.findObject(swbf.submited.dataSource.dsName+"Tabs");
+            if(tabs){
                 if(typeof ferr.tindex === 'undefined') //es Un grid
                 {
-                    swbf.findObject(swbf.submited.ID+"Tabs").selectTab(ferr.parentElement.parentElement.tindex);
+                    tabs.selectTab(ferr.parentElement.parentElement.tindex);
                 }else // es una forma
                 {
-                    swbf.findObject(swbf.submited.ID+"Tabs").selectTab(ferr.tindex);
+                    tabs.selectTab(ferr.tindex);
                 }
             }
         }
@@ -634,7 +643,7 @@ var swbf = {
             
     //Regresa un objeto con el nombre y ID del Datasource en base al parametro dado que puede ser 
     //un string o un objeto con los dos parametros        
-    getDataSourceObjDef: function(dsDef)
+    getDataSourceObjDef: function(dsDef, clone)
     { 
         var dsObjDef={};
         if(dsDef)
@@ -643,20 +652,25 @@ var swbf = {
             {  
                 dsObjDef.dsName=dsDef;
                 dsObjDef.dsId="ds_"+dsDef;
+                if(clone===true)dsObjDef.dsId+="_"+(swbf.dsCounter++);
             }
             else
             {
                 if(dsDef.dsName)dsObjDef.dsName=dsDef.dsName;
                 if(dsDef.dsId)dsObjDef.dsId=dsDef.dsId;
-                else dsObjDef.dsId="ds_"+dsDef.dsName;
+                else 
+                {
+                    dsObjDef.dsId="ds_"+dsDef.dsName;
+                    if(clone===true)dsObjDef.dsId+="_"+(swbf.dsCounter++);
+                }
             }
         }
         return dsObjDef;
     },
             
-    createDataSource: function(dsDef)
+    createDataSource: function(dsDef,clone)
     {
-        var dsObjDef=swbf.getDataSourceObjDef(dsDef);
+        var dsObjDef=swbf.getDataSourceObjDef(dsDef,clone);
         
         var ds = swbf.findObject(dsObjDef.dsId);
         if (ds == null)
@@ -665,6 +679,7 @@ var swbf = {
             if(data)
             {
                 data.ID = dsObjDef.dsId;
+                data.dsName = dsObjDef.dsName;
                 data.dataFormat = "json";
                 data.dataURL = "/swbforms/jsp/datasource.jsp?dssp="+dataSourceScriptPath+"&ds="+dsObjDef.dsName;// + "&scls=" + data.scls;//+"&modelid=" + data.modelid;
                 data.operationBindings = swbf.operationBindings;
@@ -865,6 +880,7 @@ var swbf = {
         form.layout=layout;
         form.submitButton=submit;
         form.buttons=buttons;
+        form.tindex=0;
 
         //Process linked objects
         
@@ -880,9 +896,11 @@ var swbf = {
     },
     
     //Muestra una ventana para edicion de un objeto
-    editWindowForm:function(field, fetchId, dsDef)
+    editWindowForm:function(field, fetchId, dsDef, values)
     {
         var base=swbf.cloneObject(field);
+        
+        if(values)base.values=values;
         
         var w= swbf.removeAttribute(base,"width");
         var h= swbf.removeAttribute(base,"height");

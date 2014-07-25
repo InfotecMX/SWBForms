@@ -35,7 +35,9 @@ public class ScriptObject
     
     public String getString(String key)
     {
-        return ((ScriptObjectMirror)_obj).get(key).toString();
+        Object o=((ScriptObjectMirror)_obj).get(key);
+        if(o==null)return null;
+        return o.toString();
     }
     
     public boolean containsKey(String key)

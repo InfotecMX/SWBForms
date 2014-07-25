@@ -5,7 +5,6 @@
 package org.semanticwb.forms;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -29,23 +28,27 @@ public class SWBScriptEngine
     private transient long updated;
     private transient long lastCheck;
     
-    private SWBScriptEngine(String source, ScriptEngine sengine)
+    private SWBScriptEngine(String source)
     {
         this.source=source;
-        this.sengine=sengine;     
     }
     
     private void init()
     {
-        file=new File(SWBForms.getApplicationPath()+source);
-        updated=file.lastModified();
-        lastCheck=System.currentTimeMillis();        
         try
         {
-            ScriptObject swbf=new ScriptObject(sengine.get("swbf"));
-            swbf.put("engine",this);           
-            sengine.eval("swbf.getDataSource=swbf.engine.getDataSource");
-        }catch(Exception e)
+            file=new File(SWBForms.getApplicationPath()+source);
+            updated=file.lastModified();
+            lastCheck=System.currentTimeMillis();        
+            
+            ScriptEngine engine=SWBForms.getScriptEngine();     
+            engine.put("sengine", this);
+            
+            engine=SWBForms.loadScript("/swbforms/js/swbf_server.js", engine);
+            engine=SWBForms.loadScript(source, engine);
+            
+            sengine=engine;
+        }catch(Throwable e)
         {
             e.printStackTrace();
         }
@@ -100,7 +103,6 @@ public class SWBScriptEngine
     {
         try
         {
-            sengine=loadScriptEngine(source);
             init();
         }catch(Exception e)
         {
@@ -159,13 +161,9 @@ public class SWBScriptEngine
                 {
                     try
                     {
-                        ScriptEngine se=loadScriptEngine(source);
-                        if(se!=null)
-                        {
-                            engine=new SWBScriptEngine(source, se);
-                            engine.init();
-                            engines.put(source, engine);
-                        }
+                        engine=new SWBScriptEngine(source);
+                        engine.init();
+                        engines.put(source, engine);
                     }catch(Throwable e)
                     {
                         e.printStackTrace();
@@ -179,15 +177,5 @@ public class SWBScriptEngine
         return engine;
     }
     
-    private static ScriptEngine loadScriptEngine(String source) throws IOException, ScriptException
-    {
-        System.out.println("loadScriptEngine:"+source);
-        
-        ScriptEngine engine=SWBForms.getScriptEngine(); 
-        engine=SWBForms.loadScript("/swbforms/js/swbf_server.js", engine);
-        engine=SWBForms.loadScript(source, engine);
-        
-        return engine;
-    }    
     
 }

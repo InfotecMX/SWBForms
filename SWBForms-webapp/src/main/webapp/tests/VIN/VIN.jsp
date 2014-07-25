@@ -23,7 +23,7 @@
         <div>
             <h2 style="margin-right: 50px">Estado</h2>
             <script type="text/javascript">
-                swbf.createGrid({left:"-10", margin:"10px", width: "100%", height: 200}, "Pais");
+                swbf.createGrid({left:"-10", margin:"10px", width: "100%", height: 200, initialCriteria_:{abre:"MX"},}, "Pais");
             </script>          
         </div>           
         
@@ -74,7 +74,7 @@
                         window.location = "detail.jsp?dsName=ReportesVIN";
                         return false;
                     },
-                    //initialCriteria:{estatusTienda:"527f0b780364321b91c89f9d"},
+                    //initialCriteria:{area:"a"},
                     
                     autoFetchTextMatchStyle:"exact",                    
                 }, "ReportesVIN");

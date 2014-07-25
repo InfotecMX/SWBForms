@@ -3,12 +3,12 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>mx.org.infotec.gdnps</groupId>
+    <groupId>org.semanticwb.forms</groupId>
     <artifactId>SWBForms</artifactId>
     <version>1.0-SNAPSHOT</version>
   </parent>
   <artifactId>SWBForms-engine</artifactId>
-  <name>Engine</name>
+  <name>SWBForms-engine</name>
   <url>http://maven.apache.org</url>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

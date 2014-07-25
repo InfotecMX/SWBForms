@@ -3,12 +3,12 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
     <artifactId>SWBForms</artifactId>
-    <groupId>mx.org.infotec.gdnps</groupId>
+    <groupId>org.semanticwb.forms</groupId>
     <version>1.0-SNAPSHOT</version>
   </parent>
     <artifactId>SWBForms-webapp</artifactId>
     <packaging>war</packaging>
-    <name>WebApp</name>
+    <name>SWBForms-webapp</name>
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
