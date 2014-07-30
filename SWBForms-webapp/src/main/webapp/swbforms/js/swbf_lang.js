@@ -87,9 +87,9 @@ swbf.fieldProcesors["select"] = function(field)
     }
     
     //Filtrar el resultado del select for un criterio inicial estatico
-    if(base.filterCriteria)
+    if(base.initialCriteria)
     {
-        base.optionCriteria = swbf.removeAttribute(base, "filterCriteria");
+        base.optionCriteria = swbf.removeAttribute(base, "initialCriteria");
     }
     
 //    if(base.dependentSelect)
@@ -229,6 +229,19 @@ swbf.fieldProcesors["grid"] = function(field)
     return base;
 };
 
+swbf.fieldProcesors["time"] = function(field)
+{
+    var base = swbf.cloneObject(field);
+
+    if (!base.type)
+        base.type = "time";
+    if (!base.minuteIncrement)
+        base.minuteIncrement = 15;
+    if (!base.useTextField)
+        base.useTextField = false;
+    return base;
+};
+
 //FieldItems
 
 //*********** GridEditor ****************************************
@@ -251,7 +264,7 @@ isc.GridEditor.addProperties({
             this.canEdit = false;
         }
 
-        var gridDS = swbf.createDataSource(this.dataSource);
+        var gridDS = swbf.createDataSource(this.dataSource,true);
 
         var totalsLabel = isc.Label.create({
             padding: 5,
@@ -342,6 +355,7 @@ isc.GridEditor.addProperties({
             // listGridItem.gridDataSource and optional fields
             dataSource: gridDS,
             fields: this.fields,
+            //data:this.values,
             sortField: this.gridSortField,
             // the record being edited is assumed to have a set of subrecords
             //data:this.getValue(),
@@ -350,18 +364,26 @@ isc.GridEditor.addProperties({
             autoSaveEdits: false,
             //modalEditing:true,
             //autoFetchData:true,                
-            canRemoveRecords: true,
+            canRemoveRecords: this.canEdit,
             gridComponents: ["header", "body", toolStrip],
             autoFitData: "vertical",
             autoFitMaxRecords: 5,
-            recordDoubleClick: function(pgrid, record)
+            initialCriteria: this.initialCriteria,
+            recordDoubleClick: function(viewer, record, recordNum, field, fieldNum, value, rawValue)
             {
                 if (this.parentElement.winEdit)
                 {
                     var field=this.parentElement;
                     //if(!field.winEdit.fields)field.winEdit.fields=swbf.filterFields(field.originalFields);
                     //if(!field.winEdit.title)field.winEdit.fields=field.title;
-                    var win=swbf.editWindowForm(field.winEdit,record._id,field.dataSource);
+                    var win=null;
+                    if(record && record!=null)
+                    {
+                        win=swbf.editWindowForm(field.winEdit,record._id,field.dataSource);
+                    }else
+                    {
+                        win=swbf.editWindowForm(field.winEdit,null,field.dataSource, viewer.getEditValues(recordNum));
+                    }
                     if (win.form != null)
                     {
                         win.form.fromGrid = this.parentElement.grid;
@@ -379,6 +401,14 @@ isc.GridEditor.addProperties({
                 }
             }
         });
+        
+        if(this.values)
+        {
+            for (i = 0; i < this.values.length; i++)
+            {
+                this.grid.setEditValues(i,this.values[i]);
+            }
+        }
 
         this.addMember(this.grid);
         this.addMember(this.button);
@@ -426,31 +456,35 @@ isc.GridEditor.addProperties({
         if (this.grid.invalidate == false && this.dataValue && dataValue && this.dataValue.toString() == dataValue.toString())
             return; //comparar si cambio o no el contenido
 
-        if (dataValue && dataValue != null)
+        if (dataValue)
         {
-            this.dataValue = dataValue;
-            this.grid.invalidateCache();
-            this.grid.invalidate = false;  //bandera para recargar cache
-            this.grid.fetchData({
-                _id: dataValue
-            },
-            function(dsResponse, data, dsRequest)
+            this.grid.discardAllEdits(null);
+            if(dataValue != null)
             {
-                var grid = isc.eval(dsRequest.componentId);
-                for (i = 0; i < data.length; i++)
+                this.dataValue = dataValue;
+                this.grid.invalidateCache();
+                this.grid.invalidate = false;  //bandera para recargar cache            
+                this.grid.fetchData({
+                    _id: dataValue
+                },
+                function(dsResponse, data, dsRequest)
                 {
-                    if (data[i]._id.endsWith("_biz"))
+                    var grid = isc.eval(dsRequest.componentId);
+                    for (i = 0; i < data.length; i++)
                     {
-                        grid.data.localData[i] = {
-                            _id: data[i]._id
-                        };
-                        grid.setEditValues(i, data[i]);
+                        if (data[i]._id.endsWith("_biz"))
+                        {
+                            grid.data.localData[i] = {
+                                _id: data[i]._id
+                            };
+                            grid.setEditValues(i, data[i]);
+                        }
                     }
-                }
-            });
-        } else
+                });
+            }
+        } else if (null==dataValue)
         {
-
+            this.grid.discardAllEdits(null);
         }
     }
 
@@ -484,7 +518,9 @@ isc.GridEditorItem.addProperties({
             winEdit: this.winEdit,
             readOnly: this.readOnly,
             fields: this.fields,
-            editProps: this.editProps
+            values: this.values,
+            editProps: this.editProps,
+            initialCriteria: this.initialCriteria,
         });
         //alert(this);
         grid.setForm(this.form);

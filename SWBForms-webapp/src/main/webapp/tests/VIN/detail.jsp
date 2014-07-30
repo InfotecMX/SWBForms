@@ -31,12 +31,13 @@
                 swbf.createForm({title: "Forma", width: "99%", height: "50%",
                  
                     fields: [
-                        {name: "titulo"},
+                        {name: "titulo", title: "Título 2"},
                         {name: "area", canEdit:true},
                         {name: "fecha"},
+                        {name: "hola", stype:"time"},
                         {name: "autor"},
                         {name: "revisor"},
-                        {name: "direccion", winEdit: {title:"Hola", 
+                        {name: "direccion", winEdit_: {title:"Hola", 
                             fields: [
                                 {name: "calle"},
                                 {name: "numero"},
@@ -45,7 +46,9 @@
                                 {name: "cp",validators:[{stype:"zipcode", errorMessage:"hola error..."}]},
                                 {name: "pais"},
                                 {name: "estado"}
-                            ]}, //winEdit:false   deshabilitar winEdit del padre
+                            ],
+                            values:{calle:"calle3"},
+                        }, winEdit:false,   //deshabilitar winEdit del padre
                             fields: [
                                 {name: "calle"},
                                 {name: "numero"},
@@ -53,12 +56,18 @@
                                 {name: "municipio"},
                                 {name: "cp",validators:[{stype:"zipcode"}]},
                                 //{name: "estado"},
-                            ]
+                            ],
+                            //values:[{calle:"calle1"},{calle:"calle2"}],
                         }
                     ],
         
-/*                    
+                    values:{
+                        titulo:"Titulo por defecto",     
+                        area:"Jei 2",
+                    },
+                    
                     links: [
+                        {name: "direccion1"},
                         {name: "direccion2", fields: [
                                 {name: "calle"},
                                 {name: "numero"},
@@ -66,10 +75,13 @@
                                 {name: "municipio"},
                                 {name: "cp"},
                                 //{name: "estado"},
-                            ]
+                            ],
+                            values:{
+                                calle:"Benito Juarez",
+                            }
                         }
-                    ]
-*/                    
+                    ],
+                    
                     
                 },<%=id%>, "<%=dsName%>");
             </script>

@@ -76,7 +76,7 @@ swbf.createForm({title:"Forma", width: "99%", height:"70%"}, id, dataSource);
 
 swbf.createForm({title:"Forma", width: "99%", height:"70%", fields:[{name:"nombre"}]}, id, dataSource);                
 
-swbf.createForm({title: "Forma", width: "99%", height: "70%",
+swbf.createForm({title:"Forma", width: "99%", height: "70%",
     fields: [
         {name: "titulo"},
         {name: "area"},
@@ -177,10 +177,6 @@ swbf.createForm({title: "Forma", width: "99%", height: "50%",
 
 
 
-
-
-
-
 swbf.validators["email"] = {type:"regexp", expression:"^([a-zA-Z0-9_.\\-+])+@(([a-zA-Z0-9\\-])+\\.)+[a-zA-Z0-9]{2,4}$",errorMessage:"No es un correo electrónico válido"};
 swbf.validators["zipcode"] = {type:"regexp", expression:"^\\d{5}(-\\d{4})?$", errorMessage:"El codigo postal debe tener el formato ##### o #####-####."};
 
@@ -193,3 +189,142 @@ validators:[{type:"matchesField", otherField:"password", errorMessage:"Passwords
 validators:[{type:"custom", condition:"return value == true", errorMessage:"You must accept the terms of use to continue"}]
 validators:[{type:"regexp", expression:"^\\d{5}(-\\d{4})?$", errorMessage:"Zip Codes should be in the format ##### or #####-####."}]
 */
+
+
+
+//*************************************** server ************************//
+
+//dataService
+swbf.dataServices["PaisService"] = {
+    dataSources: ["Pais"],
+    actions:["add","remove","update"],
+    service: function(request, response, user)
+    {
+        print("request:"+request);
+        print("response:"+response);
+        print("user:"+user);
+        print(swbf.engine.getDataSource("Pais").fetch().response.status);
+        //print(request.data+" "+response.data+" "+user);
+    }
+};
+
+
+
+//serverCondition
+swbf.dataSources["ReportesVIN"] = {
+    scls: "ReportesVIN",
+    modelid: "VINDB",
+    displayField: "titulo",
+    fields: [
+        {name: "titulo", title: "Título", required: true, type: "string", validators: [{type:"isUnique"}]},  //validacion de unicidad del lado del servidor
+        {name: "area", title: "Area", required: true, type: "string",validators: [
+            {
+                type:"serverCustom",                                    //serverCustom del lado del servidor
+                serverCondition:function(name,value,request){                    
+                    return value=="jei";
+                },
+                errorMessage:"Error desde el servidor, el valor debe de ser jei"
+            }
+        ]},
+        {name: "fecha", title: "Fecha", type: "date"},
+        {name: "autor", title: "Autor", stype: "select", width_:300, selectWidth:300, displayFormat: "value+' ('+record.lugarNacimiento+')'",
+            displayFormat_:function(value, record){
+                return record.nombre+" ("+record.lugarNacimiento+")";
+            }, 
+            canFilter:false, selectFields:[{name:"nombre"},{name:"lugarNacimiento"}], showFilter:true, dataSource:"Personal"},
+        {name: "revisor", title: "Revisor", stype: "select", dataSource:"Personal"},
+        {name: "direccion", title:"Dirección", stype:"grid", dataSource:"Direccion", width_:"90%", winEdit:{title:"Dirección"}},
+    ],
+    links: [
+        {name: "direccion1", title:"Dirección 1", stype:"tab", dataSource:"Direccion"},
+        {name: "direccion2", title:"Dirección 2", stype:"subForm", dataSource:"Direccion"},
+    ]
+}; 
+
+
+
+//*****************************************************************//
+//dependentSelect 
+
+//dependentSelect:"estado"
+// o
+//dependentSelect: {filterProp:"pais", dependentField:"estado"}
+
+swbf.dataSources["Direccion"] = {
+    scls: "Direccion",
+    modelid: "VINDB",
+    displayField: "calle",
+    fields: [
+        {name: "calle", title: "Calle", required: true, type: "string"},
+        {name: "numero", title: "Numero", type: "string"},
+        {name: "colonia", title: "Colonia", type: "string"},
+        {name: "municipio", title: "Municipio", type: "string"},
+        {name: "cp", title: "CP", type: "int", validators_:[{stype:"zipcode"}]},
+        {name: "pais", title: "Pais", required: true, stype: "select", dataSource:"Pais", dependentSelect:"estado", dependentSelect_: {filterProp:"pais", dependentField:"estado"}},
+        {name: "estado", title: "Estado", required: true, stype: "select", dataSource:"Estado", canFilter:false, initialCriteria_ : {} },
+    ]
+};
+
+
+//*****************************************************************//
+//default values
+
+swbf.createForm({title: "Forma", width: "99%", height: "50%",
+
+    fields: [
+        {name: "titulo"},
+        {name: "area", canEdit:true},
+        {name: "fecha"},
+        {name: "autor"},
+        {name: "revisor"},
+        {name: "direccion", winEdit_: {title:"Hola",        //Propiedades de la ventana
+            fields: [
+                {name: "calle"},
+                {name: "numero"},
+                //{name: "colonia"},
+                {name: "municipio"},
+                {name: "cp",validators:[{stype:"zipcode", errorMessage:"hola error..."}]},
+                {name: "pais"},
+                {name: "estado"}
+            ],
+            values:{calle:"calle3"},                        //valores de la ventana
+        }, winEdit:false,   //deshabilitar winEdit del padre
+            fields: [
+                {name: "calle"},
+                {name: "numero"},
+                {name: "colonia"},
+                {name: "municipio"},
+                {name: "cp",validators:[{stype:"zipcode"}]},
+                //{name: "estado"},
+            ],
+            values:[{calle:"calle1"},{calle:"calle2"}],     //valores de la propiedad, grid
+        }
+    ],
+
+    values:{                                                //valores de la forma
+        titulo:"Titulo por defecto",                        
+    },
+
+    links: [
+        {name: "direccion1"},
+        {name: "direccion2", fields: [
+                {name: "calle"},
+                {name: "numero"},
+                {name: "colonia"},
+                {name: "municipio"},
+                {name: "cp"},
+                //{name: "estado"},
+            ],
+            values:{                                        //valores de objeto ligados
+                calle:"Benito Juarez",
+            }
+        }
+    ],
+
+
+},null, "DataSourceName");
+
+
+//*****************************************************************//
+//initialCriteria
+swbf.createGrid({left:"-10", margin:"10px", width: "100%", height: 200, initialCriteria:{abre:"MX"},}, "Pais");
