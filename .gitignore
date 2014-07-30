@@ -13,3 +13,5 @@ hs_err_pid*
 
 # MacOS DesktopConfig files
 .DS_Store
+/SWBForms-engine/target/
+/SWBForms-webapp/target/
