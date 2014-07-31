@@ -37,17 +37,17 @@ public class TestDataSourceMongo {
         SWBDataSource mokedDataSource = mock(SWBDataSource.class);
         ScriptObject sso = mock(ScriptObject.class);
         when(mokedDataSource.getDataSourceScript()) .thenReturn(sso);
-        when(sso.getString("modelid")).thenReturn("VINDB");
-        when(sso.getString("scls")).thenReturn("Pais");
+        when(sso.getString("modelid")).thenReturn("TESTDB");
+        when(sso.getString("scls")).thenReturn("Country");
         DataSourceMongo dsm = new DataSourceMongo(mokedDataSource);
         BasicDBObject bdbo = new BasicDBObject();
-        BasicDBObject oldSet = (new BasicDBObject("nombre", "México")).append("abre", "si");
-        BasicDBObject newSet = (new BasicDBObject("nombre", "México")).append("abre", "no");
+        BasicDBObject oldSet = (new BasicDBObject("name", "México")).append("iso2", "si");
+        BasicDBObject newSet = (new BasicDBObject("name", "México")).append("iso2", "no");
         bdbo.append("data", oldSet);
         dsm.add(bdbo);
-        assertEquals("México", _mongo.getDB("VINDB").getCollection("Pais").findOne().get("nombre"));
+        assertEquals("México", _mongo.getDB("TESTDB").getCollection("Country").findOne().get("name"));
         BasicDBObject result = (BasicDBObject)((BasicDBList)((BasicDBObject)dsm.fetch(bdbo).get("response")).get("data")).get(0);
-        assertEquals("México",result.getString("nombre"));
+        assertEquals("México",result.getString("name"));
         String id = result.getString("_id");
         bdbo.append("data", newSet);
         newSet.append("_id", id);
@@ -57,9 +57,9 @@ public class TestDataSourceMongo {
         bdbo.append("data", newSet);
         newSet.append("_id", id);
         result = (BasicDBObject)((BasicDBList)((BasicDBObject)dsm.fetch(bdbo).get("response")).get("data")).get(0);
-        assertNotEquals("si", result.getString("abre"));
-        assertEquals("no", result.getString("abre"));
-        System.out.println(newSet.get("_id")+" -> "+result.getString("_id"));
+        assertNotEquals("si", result.getString("iso2"));
+        assertEquals("no", result.getString("iso2"));
+//        System.out.println(newSet.get("_id")+" -> "+result.getString("_id"));
         dsm.remove(bdbo);
         assertEquals(0, ((BasicDBList)((BasicDBObject)dsm.fetch(bdbo).get("response")).get("data")).size());
 //        
