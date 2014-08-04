@@ -515,6 +515,7 @@ isc.GridEditorItem.addProperties({
             dataSource: this.dataSource,
             title:this.title,
             gridSortField: this.gridSortField,
+            showFilterEditor: this.showFilter,
             winEdit: this.winEdit,
             readOnly: this.readOnly,
             fields: this.fields,

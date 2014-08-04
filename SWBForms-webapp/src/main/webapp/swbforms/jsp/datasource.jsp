@@ -10,33 +10,39 @@
 
         if(ds!=null)
         {
-            if ("fetch".equals(operationType))
+            if (SWBDataSource.ACTION_FETCH.equals(operationType))
             {
                 ret=ds.fetch(json);
-            } else if ("update".equals(operationType))
+            } else if (SWBDataSource.ACTION_UPDATE.equals(operationType))
             {
                 ret=ds.update(json);
-            } else if ("add".equals(operationType))
+            } else if (SWBDataSource.ACTION_ADD.equals(operationType))
             {
                 ret=ds.add(json);
-            } else if ("remove".equals(operationType))
+            } else if (SWBDataSource.ACTION_REMOVE.equals(operationType))
             {
                 ret=ds.remove(json);
-            } else if ("validate".equals(operationType))
+            } else if (SWBDataSource.ACTION_VALIDATE.equals(operationType))
             {
                 ret=ds.validate(json);
             }
             
-            //TODO: Agregar Cache
-            Iterator<SWBDataService> dsit=engine.findDataServices(dataSource, operationType).iterator();
-            while(dsit.hasNext())
+/*            
+            List<SWBDataService> dataServices=engine.findDataServices(dataSource, operationType);
+            if(dataServices!=null)
             {
-                SWBDataService dsrv=dsit.next();
-                ScriptObject func=dsrv.getDataSourceScript().get("service");
-                func.invoke(json,ret.get("response"),"TODO:User");
+                Iterator<SWBDataService> dsit=dataServices.iterator();
+                while(dsit.hasNext())
+                {
+                    SWBDataService dsrv=dsit.next();
+                    ScriptObject func=dsrv.getDataServiceScript().get("service");
+                    if(func!=null && func.isFunction())
+                    {
+                        func.invoke(json,ret.get("response"),"TODO:User");
+                    }
+                }            
             }
-            
-            
+*/        
         }else
         {
             ret=SWBDataSource.getError(-1);

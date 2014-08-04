@@ -4,21 +4,24 @@
  */
 package org.semanticwb.forms;
 
+import com.mongodb.BasicDBObject;
 import org.semanticwb.forms.script.ScriptObject;
 
 /**
  *
  * @author javier.solis
  */
-public class SWBDataService 
+public class SWBDataProcessor 
 {
-    public static final String METHOD_SERVICE="service";
-        
+    public static final String METHOD_REQUEST="request";
+    public static final String METHOD_RESPONSE="response";
+    
+    
     private String name=null;
     private SWBScriptEngine engine=null;
     private ScriptObject script=null;
     
-    protected SWBDataService(String name, ScriptObject script, SWBScriptEngine engine)
+    protected SWBDataProcessor(String name, ScriptObject script, SWBScriptEngine engine)
     {
         this.name=name;
         this.engine=engine;
@@ -45,9 +48,8 @@ public class SWBDataService
      * Regresa ScriptObject con el script con la definición del datasource definida el el archivo js
      * @return ScriptObject
      */
-    public ScriptObject getDataServiceScript()
+    public ScriptObject getDataProcessorScript()
     {
         return script;
     }      
-   
 }

@@ -27,12 +27,20 @@
 
 //Tipos de datos:
 type: string, int, date, float, double, long
-stype: grid, select
+stype: grid, select, time
+
+//data stores
+swbf.dataStores["mongodb"]={
+    host:"localhost",
+    port:27017,
+    class: "org.semanticwb.forms.datastore.DataStoreMongo",
+};
 
 //Definir un datasource
 swbf.dataSources["ReportesVIN"] = {
     scls: "ReportesVIN",
     modelid: "VINDB",
+    dataStore: "mongodb",      
     displayField: "titulo",
     fields: [
         {name: "titulo", title: "Título", required: true, type: "string"},
@@ -198,23 +206,43 @@ validators:[{type:"regexp", expression:"^\\d{5}(-\\d{4})?$", errorMessage:"Zip C
 swbf.dataServices["PaisService"] = {
     dataSources: ["Pais"],
     actions:["add","remove","update"],
-    service: function(request, response, user)
+    service: function(request, response, user, dataSource, action)
     {
         print("request:"+request);
         print("response:"+response);
         print("user:"+user);
-        print(swbf.engine.getDataSource("Pais").fetch().response.status);
-        //print(request.data+" "+response.data+" "+user);
+        print(swbf.getDataSource("Pais").fetch().response.data[0].nombre);
+    }
+};
+
+//dataProcessors
+swbf.dataProcessors["PaisProcessor"] = {
+    dataSources: ["Pais"],
+    actions:["add","update"],
+    request: function(request, user, dataSource, action)
+    {
+        print("request:"+request);
+        print("user:"+user);
+        request.data.created=new java.util.Date();
+        return request;
+    },
+    response: function(response, user, dataSource, action)
+    {
+        print("response:"+response);
+        print("user:"+user);
+        print(request.data.created);
+        return response;
     }
 };
 
 
 
-//serverCondition
+//serverCustom validators
 swbf.dataSources["ReportesVIN"] = {
     scls: "ReportesVIN",
     modelid: "VINDB",
     displayField: "titulo",
+    dataStore: "mongodb",      
     fields: [
         {name: "titulo", title: "Título", required: true, type: "string", validators: [{type:"isUnique"}]},  //validacion de unicidad del lado del servidor
         {name: "area", title: "Area", required: true, type: "string",validators: [
@@ -241,8 +269,6 @@ swbf.dataSources["ReportesVIN"] = {
     ]
 }; 
 
-
-
 //*****************************************************************//
 //dependentSelect 
 
@@ -253,6 +279,7 @@ swbf.dataSources["ReportesVIN"] = {
 swbf.dataSources["Direccion"] = {
     scls: "Direccion",
     modelid: "VINDB",
+    dataStore: "mongodb",      
     displayField: "calle",
     fields: [
         {name: "calle", title: "Calle", required: true, type: "string"},
@@ -328,3 +355,17 @@ swbf.createForm({title: "Forma", width: "99%", height: "50%",
 //*****************************************************************//
 //initialCriteria
 swbf.createGrid({left:"-10", margin:"10px", width: "100%", height: 200, initialCriteria:{abre:"MX"},}, "Pais");
+
+
+
+//Botones
+
+form.submitButton.setTitle("Enviar");
+
+
+//Secciones en formas
+[
+{defaultValue:"1. MERCADOTECNIA", disabled:false, type:"section", sectionExpanded:true, itemIds: ["1","1_1", "1_2", "1_3", "1_4", "1_5","1_6"] },
+{name: "1", defaultValue:"1.1 Modernizacion del punto de venta: (1:Mal / Nunca,  2:Regular / Algunas Veces,  3:Bien / Casi Siempre,  4:Muy Bien / Siempre)", type:"Header"},
+]
+
