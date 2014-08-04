@@ -1,13 +1,11 @@
 //En swblang.js
 //swbf.validators["email"] = {type:"regexp", expression:"^([a-zA-Z0-9_.\\-+])+@(([a-zA-Z0-9\\-])+\\.)+[a-zA-Z0-9]{2,4}$",errorMessage:"No es un correo electrónico válido"};
-
-swbf.config={
-    
-};
+swbf.dataStores["mongodb"].host="localhost";
 
 swbf.dataSources["ReportesVIN"] = {
     scls: "ReportesVIN",
     modelid: "VINDB",
+    dataStore: "mongodb",
     displayField: "titulo",
     fields: [
         {name: "titulo", title: "Título", required: true, type: "string", validators: [{type:"isUnique", errorMessage:"El valor debe de ser único.."}]},
@@ -51,6 +49,7 @@ swbf.dataSources["ReportesVIN"] = {
 swbf.dataSources["Personal"] = {
     scls: "Personal",
     modelid: "VINDB",
+    dataStore: "mongodb",    
     displayField: "nombre",
     fields: [
         {name: "nombre", title: "Nombre", required: true, type: "string"},
@@ -69,6 +68,7 @@ swbf.dataSources["Personal"] = {
 swbf.dataSources["Direccion"] = {
     scls: "Direccion",
     modelid: "VINDB",
+    dataStore: "mongodb",    
     displayField: "calle",
     fields: [
         {name: "calle", title: "Calle", required: true, type: "string"},
@@ -86,6 +86,7 @@ swbf.dataSources["Direccion"] = {
 swbf.dataSources["Pais"] = {
     scls: "Pais",
     modelid: "VINDB",
+    dataStore: "mongodb",    
     displayField: "nombre",
     fields: [
         {name: "nombre", title: "Pais", required: true, type: "string"},
@@ -96,6 +97,7 @@ swbf.dataSources["Pais"] = {
 swbf.dataSources["Estado"] = {
     scls: "Estado",
     modelid: "VINDB",
+    dataStore: "mongodb",    
     displayField: "nombre",
     fields: [
         {name: "nombre", title: "Estado", required: true, type: "string"},
@@ -108,7 +110,7 @@ swbf.dataSources["Estado"] = {
 swbf.dataServices["PaisService"] = {
     dataSources: ["Pais"],
     actions:["add","remove","update"],
-    service: function(request, response, user)
+    service: function(request, response, user, dataSource, action)
     {
         print("request:"+request);
         print("response:"+response);
@@ -119,13 +121,19 @@ swbf.dataServices["PaisService"] = {
 
 swbf.dataProcessors["PaisProcessor"] = {
     dataSources: ["Pais"],
-    actions:["add","remove","update"],
-    mode: "in",                                 //"in", "out"
-    service: function(request, response, user)
+    actions:["add","update"],
+    request: function(request, user, dataSource, action)
     {
         print("request:"+request);
+        print("user:"+user);
+        request.data.created=new java.util.Date();
+        return request;
+    },
+    response: function(response, user, dataSource, action)
+    {
         print("response:"+response);
         print("user:"+user);
-        print(swbf.getDataSource("Pais").fetch().response.data[0].nombre);
+        print(response.response.data.created);
+        return response;
     }
 };

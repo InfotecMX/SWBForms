@@ -23,9 +23,32 @@
         <div>
             <h2 style="margin-right: 50px">Estado</h2>
             <script type="text/javascript">
-                swbf.createGrid({left:"-10", margin:"10px", width: "100%", height: 200, initialCriteria_:{abre:"MX"},}, "Pais");
+                swbf.createGrid({
+                    left:"-10", 
+                    margin:"10px", 
+                    width: "100%", 
+                    height: 200, 
+                    initialCriteria_:{abre:"MX"},
+                    canEdit:true,
+                    canRemove:true,
+                    canAdd:true,
+                }, "Pais");
             </script>          
-        </div>           
+        </div>     
+        
+        <div>
+            <h2 style="margin-right: 50px">Estado</h2>
+            <script type="text/javascript">
+                swbf.createGrid({left:"-10", margin:"10px", width: "100%", height: 200,
+                    fields: [
+                        {name: "nombre", title: "Pais", required: true, type: "string"},
+                        {name: "abre", title: "Abre", required: true, type: "string"},
+                        {name: "created", title: "Creación", type: "timeStamp"},
+                    ],
+                    canEdit:true,
+                }, "Pais");
+            </script>          
+        </div>          
         
         <div>
             <h2 style="margin-right: 50px">Estado</h2>
