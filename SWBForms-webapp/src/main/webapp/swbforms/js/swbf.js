@@ -9,11 +9,12 @@ var swbf = {
         {operationType: "remove", dataProtocol: "postMessage"},
         {operationType: "validate", dataProtocol: "postMessage"},
     ],
+    dataStores:{},                      //DataStores
     dataSources: {},                    //Datasources
     fieldProcesors:{},                  //Procesadores de field elements
     validators:{},                      //Validator templates
-    dataServices:{},                        //Servicios    
-    dataProcessors:{},                        //Servicios      
+    dataServices:{},                    //Servicios
+    dataProcessors:{},                  //DataProcessors
     
     dsCounter:0,                        //contador incremental para IDs de datasources 
     
@@ -698,47 +699,51 @@ var swbf = {
         
         var ds = swbf.createDataSource(dsDef);
         
-        if (!base.alternateRecordStyles)
+        if (base.alternateRecordStyles===undefined)
             base.alternateRecordStyles = true;
-        if (!base.emptyCellValue)
+        if (base.emptyCellValue===undefined)
             base.emptyCellValue = "--";
-        if (!base.dataPageSize)
+        if (base.dataPageSize===undefined)
             base.dataPageSize = 20;
-        if (!base.dataSource)
+        if (base.dataSource===undefined)
             base.dataSource = ds;
-        if (!base.autoFetchData)
+        if (base.autoFetchData===undefined)
             base.autoFetchData = true;
-        if (!base.canRemoveRecords)
-            base.canRemoveRecords = true;
-        if (!base.canEdit)
-            base.canEdit = true;
-        if (!base.position)
+        if (base.position===undefined)
             base.position = "relative";
-        if (!base.canAddFormulaFields)
+        if (base.canAddFormulaFields===undefined)
             base.canAddFormulaFields = true;
-        if (!base.canAddSummaryFields)
+        if (base.canAddSummaryFields===undefined)
             base.canAddSummaryFields = true;
-        if (!base.canEditHilites)
-            base.canEditHilites = true;                  
+        if (base.canEditHilites===undefined)
+            base.canEditHilites = true;     
+        if (base.canEdit===undefined)
+            base.canEdit = false;
+        if (base.canAdd===undefined)
+            base.canAdd = false;
+        base.canRemoveRecords = swbf.removeAttribute(base, "canRemove");
+        base.showFilterEditor = swbf.removeAttribute(base, "showFilter");
 
         var totalsLabel = isc.Label.create({
             padding: 5,
         });
 
-        var button = isc.ToolStripButton.create({
-            grid: grid,
-            icon: "[SKIN]/actions/add.png",
-            prompt: "Agregar nuevo registro",
-        });
-        
-        
         var mem=[
             totalsLabel,
             isc.LayoutSpacer.create({
                 width: "*"
-            }),
-            button
+            })
         ];
+        
+        if(base.canAdd===true)
+        {
+            var addButton = isc.ToolStripButton.create({
+                grid: grid,
+                icon: "[SKIN]/actions/add.png",
+                prompt: "Agregar nuevo registro",
+            });            
+            mem.push(addButton);
+        }
         
         var button2;
         
@@ -750,18 +755,18 @@ var swbf = {
             });
             mem.push(button2);
         }
-
+        
         var toolStrip = isc.ToolStrip.create({
             width: "100%",
             height: 24,
             members: mem,
         });
         
-        if (!base.gridComponents)
+        if (base.gridComponents===undefined)
             base.gridComponents = ["filterEditor","header", "body","summaryRow", toolStrip];
 
         
-        if (!base.dataChanged)
+        if (base.dataChanged===undefined)
             base.dataChanged = function()
             {
                 this.Super("dataChanged", arguments);
@@ -776,14 +781,14 @@ var swbf = {
         var grid = isc.ListGrid.create(base);
 
         //***** nueva propiedad *********//
-        if(!base.addButtonClick)
+        if(base.addButtonClick===undefined)
         {
-            button.click = function(p1) {
+            addButton.click = function(p1) {
                 grid.startEditingNew(grid.initialCriteria);
             };
         }else
         {
-            button.click = base.addButtonClick;
+            addButton.click = base.addButtonClick;
         }
         
         if(base.canEditHilites==true)
@@ -809,20 +814,20 @@ var swbf = {
         
         var formBase = swbf.cloneObject(base);
 
-        if (!formBase.numCols)
+        if (formBase.numCols===undefined)
             formBase.numCols = 6;        
         //colWidths: [60, "*"],        
-        if (!formBase.titleAlign)
+        if (formBase.titleAlign===undefined)
             formBase.titleAlign = "right";
-        if (!formBase.cellPadding)
+        if (formBase.cellPadding===undefined)
             formBase.cellPadding = 5;
-        if (!formBase.dataSource)
+        if (formBase.dataSource===undefined)
             formBase.dataSource = ds;
         if (formBase.width)
             delete formBase.width;
         if (formBase.height)
             delete formBase.height;
-        if (!formBase.showTabs && formBase.showTabs!=false)
+        if (formBase.showTabs===undefined)
         {
             formBase.showTabs = true;
         }
@@ -862,7 +867,7 @@ var swbf = {
             });
         }
         
-        var buttons=isc.HLayout.create({height: "20px", members: [submit]});
+        var buttons=isc.HLayout.create({height: "20px", padding:"10px", members: [submit]});
 
         var layout=isc.VLayout.create({
             membersMargin: 5,
@@ -875,6 +880,8 @@ var swbf = {
             position: "relative",
         });
         
+        tabs.setBorder("1px solid darkgray");
+        layout.setZIndex(0)
 
         //Para tener acceso al layout desde la forma, al contenedor de botones y al boton de submit
         form.layout=layout;
@@ -1156,9 +1163,7 @@ var swbf = {
     
 };
 
-
-
-
+swbf.dataStores["mongodb"]={};
 
 
 

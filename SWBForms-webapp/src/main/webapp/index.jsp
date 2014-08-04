@@ -3,6 +3,7 @@
     Created on : Dec 15, 2013, 5:30:59 PM
     Author     : javier.solis.g
 --%>
+<%@page import="org.semanticwb.forms.SWBForms"%>
 <%@page import="org.semanticwb.forms.SWBDataSource"%>
 <%@page import="org.semanticwb.forms.SWBScriptEngine"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
@@ -16,6 +17,13 @@
         <h1>Hello World!</h1>
         <pre>
 <%
+    //init SWBPlatform
+    if (SWBForms.getApplicationPath() == null)
+    {
+        String apppath = config.getServletContext().getRealPath("/");
+        SWBForms.createInstance(apppath);
+    }         
+    
     SWBScriptEngine engine=SWBScriptEngine.getScriptEngine("/tests/VIN/datasources.js");    
     SWBDataSource ds=engine.getDataSource("ReportesVIN");
     out.println("DBName:"+ds.fetch());

@@ -4,9 +4,11 @@
  */
 package org.semanticwb.forms;
 
+import com.mongodb.BasicDBObject;
 import java.io.File;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,11 +24,16 @@ public class SWBScriptEngine
 {
     private static ConcurrentHashMap<String,SWBScriptEngine> engines=new ConcurrentHashMap();
     
+    private HashMap<String,SWBDataSource> dataSources=null;
+    private HashMap<String,List<SWBDataService>> dataServices=null;
+    private HashMap<String,List<SWBDataProcessor>> dataProcessors=null;
     private ScriptEngine sengine=null;
     private String source=null;    
     private File file=null;    
     private transient long updated;
     private transient long lastCheck;
+    
+    private static final List _emptyList_=new ArrayList();
     
     private SWBScriptEngine(String source)
     {
@@ -47,7 +54,88 @@ public class SWBScriptEngine
             engine=SWBForms.loadScript("/swbforms/js/swbf_server.js", engine);
             engine=SWBForms.loadScript(source, engine);
             
-            sengine=engine;
+            
+            ScriptObject swbf=new ScriptObject(engine.get("swbf"));
+                
+            //Load DataSources
+            {
+                HashMap<String,SWBDataSource> dataSources=new HashMap();
+                this.sengine=engine;
+                this.dataSources=dataSources;            
+                ScriptObject dss=swbf.get("dataSources");   
+                Iterator<String> it=dss.keySet().iterator();
+                while (it.hasNext()) {
+                    String dsname = it.next();
+                    dataSources.put(dsname, new SWBDataSource(dsname,this));
+                }
+            }
+            
+            //Load DataServices
+            {
+                HashMap<String,List<SWBDataService>> dataServices=new HashMap();
+                this.dataServices=dataServices;            
+                ScriptObject dss=swbf.get("dataServices");   
+                Iterator<String> it=dss.keySet().iterator();
+                while(it.hasNext())
+                {
+                    String key=it.next();
+                    ScriptObject data=dss.get(key);
+                    System.out.println(key+":"+data);
+                    SWBDataService dataService=new SWBDataService(key,data,this);
+                    
+                    Iterator<ScriptObject> dsit=data.get("dataSources").values().iterator();
+                    while (dsit.hasNext()) 
+                    {
+                        ScriptObject dsname = dsit.next();
+                        Iterator<ScriptObject> acit=data.get("actions").values().iterator();
+                        while (acit.hasNext()) {
+                            ScriptObject action = acit.next();
+                            String k=dsname.getValue()+"-"+action.getValue();
+                            List<SWBDataService> arr=dataServices.get(k);
+                            if(arr==null)
+                            {
+                                arr=new ArrayList();
+                                dataServices.put(k, arr);
+                            }
+                            arr.add(dataService);
+                            System.out.println(k+":"+dataService);
+                        }
+                    }
+                }
+            }
+            
+            //Load DataProcessors
+            {
+                HashMap<String,List<SWBDataProcessor>> dataProcessors=new HashMap();
+                this.dataProcessors=dataProcessors;            
+                ScriptObject dss=swbf.get("dataProcessors");   
+                Iterator<String> it=dss.keySet().iterator();
+                while(it.hasNext())
+                {
+                    String key=it.next();
+                    ScriptObject data=dss.get(key);
+                    System.out.println(key+":"+data);
+                    SWBDataProcessor dataProcessor=new SWBDataProcessor(key,data,this);
+                    
+                    Iterator<ScriptObject> dsit=data.get("dataSources").values().iterator();
+                    while (dsit.hasNext()) 
+                    {
+                        ScriptObject dsname = dsit.next();
+                        Iterator<ScriptObject> acit=data.get("actions").values().iterator();
+                        while (acit.hasNext()) {
+                            ScriptObject action = acit.next();
+                            String k=dsname.getValue()+"-"+action.getValue();
+                            List<SWBDataProcessor> arr=dataProcessors.get(k);
+                            if(arr==null)
+                            {
+                                arr=new ArrayList();
+                                dataProcessors.put(k, arr);
+                            }
+                            arr.add(dataProcessor);
+                            System.out.println(k+":"+dataProcessor);
+                        }
+                    }                }
+            }            
         }catch(Throwable e)
         {
             e.printStackTrace();
@@ -56,48 +144,86 @@ public class SWBScriptEngine
     
     public SWBDataSource getDataSource(String name)
     {
-        try
-        {
-            if(sengine!=null && sengine.get("swbf")!=null)
-            {
-                ScriptObject swbf=new ScriptObject(sengine.get("swbf"));
-                ScriptObject dataSources=swbf.get("dataSources");   
-                ScriptObject ds=dataSources.get(name);
-                if(ds!=null)return new SWBDataSource(name,ds,this);
-            }
-        }catch(Throwable e)
-        {
-            e.printStackTrace();
-        }
-        return null;        
+        return dataSources.get(name);
     }
-    
+
+    /**
+     * Busca los objetos SWBDataService relacionados a un especifico DataSource y una accion 
+     * @param dataSource
+     * @param action
+     * @return Lista de SWBDataService o null si no hay SWBDataService relacionados
+     */
     public List<SWBDataService> findDataServices(String dataSource, String action)
     {
-        ArrayList<SWBDataService> arr=new ArrayList();
-        try
+        return dataServices.get(dataSource+"-"+action);
+    }
+    
+    public void invokeDataServices(String dataSource, String action, BasicDBObject request, BasicDBObject response)
+    {
+        List<SWBDataService> list=findDataServices(dataSource, action);
+        if(list!=null)
         {
-            if(sengine!=null && sengine.get("swbf")!=null)
+            Iterator<SWBDataService> dsit=list.iterator();
+            while(dsit.hasNext())
             {
-                ScriptObject swbf=new ScriptObject(sengine.get("swbf"));
-                ScriptObject dataServices=swbf.get("dataServices");   
-                Iterator<String> it=dataServices.keySet().iterator();
-                while(it.hasNext())
+                SWBDataService dsrv=dsit.next();
+                ScriptObject func=dsrv.getDataServiceScript().get(SWBDataService.METHOD_SERVICE);
+                if(func!=null && func.isFunction())
                 {
-                    String key=it.next();
-                    ScriptObject ds=dataServices.get(key);
-                    if(ds.get("dataSources").containsValue(dataSource) && ds.get("actions").containsValue(action))
+                    try
                     {
-                        arr.add(new SWBDataService(key,ds,this));
+                        func.invoke(request,response.get("response"),"TODO:User",dataSource,action);
+                    }catch(Throwable e)
+                    {
+                        e.printStackTrace();
                     }
                 }
-            }
-        }catch(Throwable e)
-        {
-            e.printStackTrace();
-        }
-        return arr;        
+            }            
+        }       
     }
+    
+    /**
+     * Busca los objetos SWBDataProcessor relacionados a un especifico DataSource y una accion 
+     * @param dataSource
+     * @param action
+     * @return Lista de SWBDataProcessor o null si no hay SWBDataService relacionados
+     */
+    
+    public List<SWBDataProcessor> findDataProcessors(String dataSource, String action)
+    {
+        return dataProcessors.get(dataSource+"-"+action);
+    }   
+    
+    public BasicDBObject invokeDataProcessors(String dataSource, String action, String method, BasicDBObject obj)
+    {
+        List<SWBDataProcessor> list=findDataProcessors(dataSource, action);
+        if(list!=null)
+        {
+            Iterator<SWBDataProcessor> dsit=list.iterator();
+            while(dsit.hasNext())
+            {
+                SWBDataProcessor dsrv=dsit.next();
+                ScriptObject func=dsrv.getDataProcessorScript().get(method);
+                System.out.println("func:"+func);
+                if(func!=null && func.isFunction())
+                {
+                    try
+                    {
+                        ScriptObject r=func.invoke(obj,"TODO:User",dataSource,action);
+                        if(r!=null && r.getValue() instanceof BasicDBObject)
+                        {
+                            obj=(BasicDBObject)r.getValue();
+                        }
+                    }catch(Throwable e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+            }            
+        }   
+        return obj;
+    }
+    
     
     public void reloadScriptEngine()
     {

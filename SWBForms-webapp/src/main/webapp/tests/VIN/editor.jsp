@@ -5,12 +5,12 @@
 --%>
 <%@page import="java.io.File"%>
 <%@page import="java.io.FileOutputStream"%>
-<%@page import="org.semanticwb.platform.SWBUtils"%>
+<%@page import="org.semanticwb.forms.*"%>
 <%@page import="java.io.FileInputStream"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%
-    String dir=config.getServletContext().getRealPath("/")+request.getRequestURI().substring(1,request.getRequestURI().lastIndexOf("/"))+"/";
-    
+    String dir=config.getServletContext().getRealPath("/")+"/"+request.getRequestURI().substring(1,request.getRequestURI().lastIndexOf("/"))+"/";
+    System.out.println(dir);
     String filename=request.getParameter("fn");
     
     String path=null;
@@ -37,7 +37,7 @@
         try
         {
             FileInputStream in=new FileInputStream(path);
-            code=SWBUtils.readInputStream(in,"utf-8");
+            code=SWBFormsUtils.readInputStream(in,"utf-8");
             code=code.replaceAll("<", "&lt;");
         }catch(Exception e){code="";}
     }

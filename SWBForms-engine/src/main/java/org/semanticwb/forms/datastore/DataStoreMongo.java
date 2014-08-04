@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.semanticwb.forms.datasource;
+package org.semanticwb.forms.datastore;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -21,14 +21,17 @@ import org.semanticwb.forms.script.ScriptObject;
  *
  * @author javiersolis
  */
-public class DataSourceMongo 
+public class DataStoreMongo implements DataStore
 {
     private static MongoClient mongoClient=null;
         
     SWBDataSource base=null;
+    ScriptObject dataStore=null;
         
-    public DataSourceMongo(SWBDataSource base) 
+    public DataStoreMongo(ScriptObject dataStore, SWBDataSource base) 
     {
+        System.out.println("DataStoreMongo:"+dataStore);
+        this.dataStore=dataStore;
         this.base=base;         
         try
         {
@@ -43,12 +46,12 @@ public class DataSourceMongo
     {
         if(mongoClient==null)
         {
-            synchronized(DataSourceMongo.class)
+            synchronized(DataStoreMongo.class)
             {
                 if(mongoClient==null)
                 {
                     //TODO:configurar direccion de servidor
-                    mongoClient = new MongoClient("localhost");
+                    mongoClient = new MongoClient(dataStore.getString("host"),(Integer)dataStore.get("port").getValue());
                 }                
             }
         }
@@ -182,9 +185,12 @@ public class DataSourceMongo
             BasicDBObject data = (BasicDBObject)json.get("data");
 
             BasicDBObject obj=data;//copyJSONObject(data);
-            ObjectId id = new ObjectId();
-            obj.append("_id", "_suri:"+modelid+":"+scls+":"+id.toString());
-            //obj.append("_id", id);
+            if(obj.getString("_id")==null)
+            {
+                ObjectId id = new ObjectId();
+                obj.append("_id", "_suri:"+modelid+":"+scls+":"+id.toString());
+                //obj.append("_id", id);
+            }
             coll.insert(obj);
 
             BasicDBObject ret=new BasicDBObject();
