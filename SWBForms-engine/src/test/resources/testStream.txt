@@ -1,0 +1,11 @@
+Con el cambio de direccionamiento externo fue necesario reconectar el bridge br-ex
+
+ovs-vsctl del-port br-ex vlan1616
+ovs-vsctl add-port br-ex vlan1193
+
+después hubo que retirar la red exerna, esto se hizo con dashboard, liberando las ips reservadas y borrandolo para volver a crearlo con el nuevo direccionamiento
+
+
+neutron net-create ext-net -- --router:external=True --provider:network_type gre --provider:segmentation_id 2
+neutron subnet-create ext-net  --allocation-pool start=172.18.93.10,end=172.18.93.60  --gateway=172.18.93.62 --enable_dhcp=False  172.18.93.0/26
+
