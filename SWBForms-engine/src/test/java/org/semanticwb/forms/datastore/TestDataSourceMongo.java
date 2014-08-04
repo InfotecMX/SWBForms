@@ -1,4 +1,4 @@
-package org.semanticwb.forms.datasource;
+package org.semanticwb.forms.datastore;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -39,7 +39,12 @@ public class TestDataSourceMongo {
         when(mokedDataSource.getDataSourceScript()) .thenReturn(sso);
         when(sso.getString("modelid")).thenReturn("TESTDB");
         when(sso.getString("scls")).thenReturn("Country");
-        DataSourceMongo dsm = new DataSourceMongo(mokedDataSource);
+        ScriptObject sods = mock(ScriptObject.class);
+        ScriptObject soport = mock(ScriptObject.class);
+        when(soport.getValue()).thenReturn(27017);
+        when(sods.getString("host")).thenReturn("localhost");
+        when(sods.get("port")).thenReturn(soport);
+        DataStoreMongo dsm = new DataStoreMongo(sods, mokedDataSource);
         BasicDBObject bdbo = new BasicDBObject();
         BasicDBObject oldSet = (new BasicDBObject("name", "México")).append("iso2", "si");
         BasicDBObject newSet = (new BasicDBObject("name", "México")).append("iso2", "no");

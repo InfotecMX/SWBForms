@@ -7,13 +7,18 @@ var swbf = {
         {operationType: "add", dataProtocol: "postMessage"},
         {operationType: "update", dataProtocol: "postMessage"},
         {operationType: "remove", dataProtocol: "postMessage"},
+        {operationType: "validate", dataProtocol: "postMessage"},
     ],
+    dataStores:{},                      //DataStores
     dataSources: {},                    //Datasources
     fieldProcesors:{},                  //Procesadores de field elements
     validators:{},                      //Validator templates
-    dataServices:{},                        //Servicios    
+    dataServices:{},                    //Servicios
+    dataProcessors:{},                  //DataProcessors
     
-    dataSourceScriptPath:"",    
+    dsCounter:0,                        //contador incremental para IDs de datasources 
+    
+    dataSourceScriptPath:"",            //ruta de datasource.js
     
     //Metodos Internos
     
@@ -374,7 +379,7 @@ var swbf = {
             {
                 var link=links[x];
                 
-                var ds = swbf.createDataSource(link.dataSource);       
+                var ds = swbf.createDataSource(link.dataSource,true);       
                                 
                 if(link.stype==="subForm")
                 {
@@ -385,8 +390,10 @@ var swbf = {
                         titleAlign : "right",
                         disabled : false,
                         dataSource: ds,
-                        fields:link.fields
+                        fields:link.fields,
+                        values:link.values,
                     });
+                    sform.tindex=form.tindex;
 
                     var spane=isc.VStack.create({
                         membersMargin: 10,
@@ -418,6 +425,8 @@ var swbf = {
                         dataSource: ds,
                         fields:link.fields
                     });
+                    
+                    sform.tindex=form.tindex+1;
                     
                     var spane=isc.VStack.create({
                         members: [sform]
@@ -460,13 +469,14 @@ var swbf = {
         isc.warn(txt);
         if(ferr!=null)
         {
-            if( swbf.findObject(swbf.submited.ID+"Tabs")){
+            var tabs=swbf.findObject(swbf.submited.dataSource.dsName+"Tabs");
+            if(tabs){
                 if(typeof ferr.tindex === 'undefined') //es Un grid
                 {
-                    swbf.findObject(swbf.submited.ID+"Tabs").selectTab(ferr.parentElement.parentElement.tindex);
+                    tabs.selectTab(ferr.parentElement.parentElement.tindex);
                 }else // es una forma
                 {
-                    swbf.findObject(swbf.submited.ID+"Tabs").selectTab(ferr.tindex);
+                    tabs.selectTab(ferr.tindex);
                 }
             }
         }
@@ -634,7 +644,7 @@ var swbf = {
             
     //Regresa un objeto con el nombre y ID del Datasource en base al parametro dado que puede ser 
     //un string o un objeto con los dos parametros        
-    getDataSourceObjDef: function(dsDef)
+    getDataSourceObjDef: function(dsDef, clone)
     { 
         var dsObjDef={};
         if(dsDef)
@@ -643,20 +653,25 @@ var swbf = {
             {  
                 dsObjDef.dsName=dsDef;
                 dsObjDef.dsId="ds_"+dsDef;
+                if(clone===true)dsObjDef.dsId+="_"+(swbf.dsCounter++);
             }
             else
             {
                 if(dsDef.dsName)dsObjDef.dsName=dsDef.dsName;
                 if(dsDef.dsId)dsObjDef.dsId=dsDef.dsId;
-                else dsObjDef.dsId="ds_"+dsDef.dsName;
+                else 
+                {
+                    dsObjDef.dsId="ds_"+dsDef.dsName;
+                    if(clone===true)dsObjDef.dsId+="_"+(swbf.dsCounter++);
+                }
             }
         }
         return dsObjDef;
     },
             
-    createDataSource: function(dsDef)
+    createDataSource: function(dsDef,clone)
     {
-        var dsObjDef=swbf.getDataSourceObjDef(dsDef);
+        var dsObjDef=swbf.getDataSourceObjDef(dsDef,clone);
         
         var ds = swbf.findObject(dsObjDef.dsId);
         if (ds == null)
@@ -665,6 +680,7 @@ var swbf = {
             if(data)
             {
                 data.ID = dsObjDef.dsId;
+                data.dsName = dsObjDef.dsName;
                 data.dataFormat = "json";
                 data.dataURL = "/swbforms/jsp/datasource.jsp?dssp="+dataSourceScriptPath+"&ds="+dsObjDef.dsName;// + "&scls=" + data.scls;//+"&modelid=" + data.modelid;
                 data.operationBindings = swbf.operationBindings;
@@ -683,47 +699,51 @@ var swbf = {
         
         var ds = swbf.createDataSource(dsDef);
         
-        if (!base.alternateRecordStyles)
+        if (base.alternateRecordStyles===undefined)
             base.alternateRecordStyles = true;
-        if (!base.emptyCellValue)
+        if (base.emptyCellValue===undefined)
             base.emptyCellValue = "--";
-        if (!base.dataPageSize)
+        if (base.dataPageSize===undefined)
             base.dataPageSize = 20;
-        if (!base.dataSource)
+        if (base.dataSource===undefined)
             base.dataSource = ds;
-        if (!base.autoFetchData)
+        if (base.autoFetchData===undefined)
             base.autoFetchData = true;
-        if (!base.canRemoveRecords)
-            base.canRemoveRecords = true;
-        if (!base.canEdit)
-            base.canEdit = true;
-        if (!base.position)
+        if (base.position===undefined)
             base.position = "relative";
-        if (!base.canAddFormulaFields)
+        if (base.canAddFormulaFields===undefined)
             base.canAddFormulaFields = true;
-        if (!base.canAddSummaryFields)
+        if (base.canAddSummaryFields===undefined)
             base.canAddSummaryFields = true;
-        if (!base.canEditHilites)
-            base.canEditHilites = true;                  
+        if (base.canEditHilites===undefined)
+            base.canEditHilites = true;     
+        if (base.canEdit===undefined)
+            base.canEdit = false;
+        if (base.canAdd===undefined)
+            base.canAdd = false;
+        base.canRemoveRecords = swbf.removeAttribute(base, "canRemove");
+        base.showFilterEditor = swbf.removeAttribute(base, "showFilter");
 
         var totalsLabel = isc.Label.create({
             padding: 5,
         });
 
-        var button = isc.ToolStripButton.create({
-            grid: grid,
-            icon: "[SKIN]/actions/add.png",
-            prompt: "Agregar nuevo registro",
-        });
-        
-        
         var mem=[
             totalsLabel,
             isc.LayoutSpacer.create({
                 width: "*"
-            }),
-            button
+            })
         ];
+        
+        if(base.canAdd===true)
+        {
+            var addButton = isc.ToolStripButton.create({
+                grid: grid,
+                icon: "[SKIN]/actions/add.png",
+                prompt: "Agregar nuevo registro",
+            });            
+            mem.push(addButton);
+        }
         
         var button2;
         
@@ -735,18 +755,18 @@ var swbf = {
             });
             mem.push(button2);
         }
-
+        
         var toolStrip = isc.ToolStrip.create({
             width: "100%",
             height: 24,
             members: mem,
         });
         
-        if (!base.gridComponents)
+        if (base.gridComponents===undefined)
             base.gridComponents = ["filterEditor","header", "body","summaryRow", toolStrip];
 
         
-        if (!base.dataChanged)
+        if (base.dataChanged===undefined)
             base.dataChanged = function()
             {
                 this.Super("dataChanged", arguments);
@@ -761,14 +781,14 @@ var swbf = {
         var grid = isc.ListGrid.create(base);
 
         //***** nueva propiedad *********//
-        if(!base.addButtonClick)
+        if(base.addButtonClick===undefined)
         {
-            button.click = function(p1) {
+            addButton.click = function(p1) {
                 grid.startEditingNew(grid.initialCriteria);
             };
         }else
         {
-            button.click = base.addButtonClick;
+            addButton.click = base.addButtonClick;
         }
         
         if(base.canEditHilites==true)
@@ -794,20 +814,20 @@ var swbf = {
         
         var formBase = swbf.cloneObject(base);
 
-        if (!formBase.numCols)
+        if (formBase.numCols===undefined)
             formBase.numCols = 6;        
         //colWidths: [60, "*"],        
-        if (!formBase.titleAlign)
+        if (formBase.titleAlign===undefined)
             formBase.titleAlign = "right";
-        if (!formBase.cellPadding)
+        if (formBase.cellPadding===undefined)
             formBase.cellPadding = 5;
-        if (!formBase.dataSource)
+        if (formBase.dataSource===undefined)
             formBase.dataSource = ds;
         if (formBase.width)
             delete formBase.width;
         if (formBase.height)
             delete formBase.height;
-        if (!formBase.showTabs && formBase.showTabs!=false)
+        if (formBase.showTabs===undefined)
         {
             formBase.showTabs = true;
         }
@@ -847,7 +867,7 @@ var swbf = {
             });
         }
         
-        var buttons=isc.HLayout.create({height: "20px", members: [submit]});
+        var buttons=isc.HLayout.create({height: "20px", padding:"10px", members: [submit]});
 
         var layout=isc.VLayout.create({
             membersMargin: 5,
@@ -860,11 +880,14 @@ var swbf = {
             position: "relative",
         });
         
+        tabs.setBorder("1px solid darkgray");
+        layout.setZIndex(0)
 
         //Para tener acceso al layout desde la forma, al contenedor de botones y al boton de submit
         form.layout=layout;
         form.submitButton=submit;
         form.buttons=buttons;
+        form.tindex=0;
 
         //Process linked objects
         
@@ -880,9 +903,11 @@ var swbf = {
     },
     
     //Muestra una ventana para edicion de un objeto
-    editWindowForm:function(field, fetchId, dsDef)
+    editWindowForm:function(field, fetchId, dsDef, values)
     {
         var base=swbf.cloneObject(field);
+        
+        if(values)base.values=values;
         
         var w= swbf.removeAttribute(base,"width");
         var h= swbf.removeAttribute(base,"height");
@@ -1138,9 +1163,7 @@ var swbf = {
     
 };
 
-
-
-
+swbf.dataStores["mongodb"]={};
 
 
 
