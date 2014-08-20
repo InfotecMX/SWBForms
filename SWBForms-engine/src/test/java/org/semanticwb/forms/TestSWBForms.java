@@ -20,7 +20,7 @@ public class TestSWBForms {
     public void test() throws Exception{
         SWBForms instance = SWBForms.createInstance("src/test/resources");
         assertNotNull(instance);
-        ScriptEngine engine = SWBForms.getScriptEngine();
+        ScriptEngine engine = SWBForms.getNativeScriptEngine();
         engine=SWBForms.loadScript("/swbforms/js/swbf_server.js", engine);
         engine=SWBForms.loadScript("/datasource/datasources.js", engine);
         assertNotNull(engine);

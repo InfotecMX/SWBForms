@@ -15,13 +15,11 @@ public class SWBDataService
     public static final String METHOD_SERVICE="service";
         
     private String name=null;
-    private SWBScriptEngine engine=null;
     private ScriptObject script=null;
     
-    protected SWBDataService(String name, ScriptObject script, SWBScriptEngine engine)
+    protected SWBDataService(String name, ScriptObject script)
     {
         this.name=name;
-        this.engine=engine;
         this.script=script;
     }
 
@@ -31,14 +29,6 @@ public class SWBDataService
      */
     public String getName() {
         return name;
-    }
-
-    /**
-     * Regresa el SWBScriptEngine que contiene a este DataSource
-     * @return SWBScriptEngine
-     */
-    public SWBScriptEngine getScriptEngine() {
-        return engine;
     }
     
     /**

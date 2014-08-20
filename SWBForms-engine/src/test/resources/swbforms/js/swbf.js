@@ -15,6 +15,8 @@ var swbf = {
     validators:{},                      //Validator templates
     dataServices:{},                    //Servicios
     dataProcessors:{},                  //DataProcessors
+    authModules:{},                     //Modulos de autenticación    
+    userRepository:{},                  //User Repository
     
     dsCounter:0,                        //contador incremental para IDs de datasources 
     
@@ -735,10 +737,12 @@ var swbf = {
             })
         ];
         
+        var addButton;
+        
         if(base.canAdd===true)
         {
-            var addButton = isc.ToolStripButton.create({
-                grid: grid,
+            addButton = isc.ToolStripButton.create({
+                //grid: grid,
                 icon: "[SKIN]/actions/add.png",
                 prompt: "Agregar nuevo registro",
             });            
@@ -780,18 +784,20 @@ var swbf = {
 
         var grid = isc.ListGrid.create(base);
 
-        //***** nueva propiedad *********//
-        if(base.addButtonClick===undefined)
+        if(base.canAdd===true)
         {
-            addButton.click = function(p1) {
-                grid.startEditingNew(grid.initialCriteria);
-            };
-        }else
-        {
-            addButton.click = base.addButtonClick;
+            if(base.addButtonClick===undefined)
+            {
+                addButton.click = function(p1) {
+                    grid.startEditingNew(grid.initialCriteria);
+                };
+            }else
+            {
+                addButton.click = base.addButtonClick;
+            }
         }
         
-        if(base.canEditHilites==true)
+        if(base.canEditHilites===true)
         {
             button2.click=function(p1)
             {
@@ -880,7 +886,7 @@ var swbf = {
             position: "relative",
         });
         
-        tabs.setBorder("1px solid darkgray");
+        //tabs.setBorder("1px solid darkgray");
         layout.setZIndex(0)
 
         //Para tener acceso al layout desde la forma, al contenedor de botones y al boton de submit
@@ -1147,6 +1153,8 @@ var swbf = {
             swbf.loadJS(isomorphicDir+"locales/frameworkMessages_es.properties");
             
             isc.DateItem.DEFAULT_START_DATE.setYear(1900);
+            Time.setDefaultDisplayTimezone("-06:00");
+            Time.adjustForDST=false;
             
             if(file.charAt(0)!='/')
             {

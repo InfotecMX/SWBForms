@@ -8,10 +8,9 @@ import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.util.JSON;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.util.Iterator;
 import java.util.Map;
-import org.semanticwb.forms.datastore.DataStore;
+import org.semanticwb.forms.datastore.SWBDataStore;
 import org.semanticwb.forms.script.ScriptObject;
 
 /**
@@ -29,34 +28,16 @@ public class SWBDataSource
     private String name=null;
     private SWBScriptEngine engine=null;
     private ScriptObject script=null;
-    private DataStore db=null;
-    
-    protected SWBDataSource(String name, SWBScriptEngine engine)
+    private SWBDataStore db=null;
+
+    protected SWBDataSource(String name, ScriptObject script, SWBScriptEngine engine)
     {
-        System.out.println("SWBDataSource:"+name);
         this.name=name;
         this.engine=engine;
-//        this.script=script;
-        
-        ScriptObject swbf=new ScriptObject(engine.getNativeScriptEngine().get("swbf"));
-        ScriptObject dataSources=swbf.get("dataSources");   
-        this.script=dataSources.get(name);
-
-        if(this.script==null)throw new NoSuchFieldError("DataSource not found:"+name);
-        
+        this.script=script;        
         String dataStoreName=this.script.getString("dataStore");
-        ScriptObject dataStore=swbf.get("dataStores").get(dataStoreName);
-        
-        String dataStoreClass=dataStore.getString("class");
-        
-        System.out.println(dataStoreName+":"+dataStoreClass);
-        
-        try
-        {
-            Class cls=Class.forName(dataStoreClass);
-            Constructor c=cls.getConstructor(ScriptObject.class, SWBDataSource.class);
-            db=(DataStore)c.newInstance(dataStore,this);
-        }catch(Exception e){e.printStackTrace();}        
+        this.db=engine.getDataStore(dataStoreName);        
+        if(this.db==null)throw new NoSuchFieldError("DataStore not found:"+dataStoreName);
     }
 
     /**
@@ -97,7 +78,7 @@ public class SWBDataSource
     public BasicDBObject fetch(BasicDBObject json) throws IOException
     {
         BasicDBObject req=engine.invokeDataProcessors(name, SWBDataSource.ACTION_FETCH, SWBDataProcessor.METHOD_REQUEST, json);
-        BasicDBObject res=db.fetch(req);
+        BasicDBObject res=db.fetch(req,this);
         res=engine.invokeDataProcessors(name, SWBDataSource.ACTION_FETCH, SWBDataProcessor.METHOD_RESPONSE, res);
         engine.invokeDataServices(name, SWBDataSource.ACTION_FETCH, req, res);
         return res;
@@ -169,7 +150,7 @@ public class SWBDataSource
     public BasicDBObject update(BasicDBObject json) throws IOException
     {
         BasicDBObject req=engine.invokeDataProcessors(name, SWBDataSource.ACTION_UPDATE, SWBDataProcessor.METHOD_REQUEST, json);
-        BasicDBObject res=db.update(req);
+        BasicDBObject res=db.update(req,this);
         res=engine.invokeDataProcessors(name, SWBDataSource.ACTION_UPDATE, SWBDataProcessor.METHOD_RESPONSE, res);
         engine.invokeDataServices(name, SWBDataSource.ACTION_UPDATE, req, res);
         return res;
@@ -183,7 +164,7 @@ public class SWBDataSource
     public BasicDBObject add(BasicDBObject json) throws IOException
     {
         BasicDBObject req=engine.invokeDataProcessors(name, SWBDataSource.ACTION_ADD, SWBDataProcessor.METHOD_REQUEST, json);
-        BasicDBObject res=db.add(req);
+        BasicDBObject res=db.add(req,this);
         res=engine.invokeDataProcessors(name, SWBDataSource.ACTION_ADD, SWBDataProcessor.METHOD_RESPONSE, res);
         engine.invokeDataServices(name, SWBDataSource.ACTION_ADD, req, res);
         return res;
@@ -197,7 +178,7 @@ public class SWBDataSource
     public BasicDBObject remove(BasicDBObject json) throws IOException
     {
         BasicDBObject req=engine.invokeDataProcessors(name, SWBDataSource.ACTION_REMOVE, SWBDataProcessor.METHOD_REQUEST, json);
-        BasicDBObject res=db.remove(req);
+        BasicDBObject res=db.remove(req,this);
         res=engine.invokeDataProcessors(name, SWBDataSource.ACTION_REMOVE, SWBDataProcessor.METHOD_RESPONSE, res);
         engine.invokeDataServices(name, SWBDataSource.ACTION_REMOVE, req, res);
         return res;
@@ -249,7 +230,7 @@ public class SWBDataSource
                                 if(func!=null)
                                 {
                                     //System.out.println(key+"-->"+value+"-->"+func);
-                                    ScriptObject r=func.invoke(key,value,json);
+                                    ScriptObject r=func.invoke(engine,key,value,json);
                                     //System.out.println("r:"+r.getValue());
                                     if(r!=null && r.getValue().equals(false))
                                     {

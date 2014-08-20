@@ -44,29 +44,30 @@ public class TestDataSourceMongo {
         when(soport.getValue()).thenReturn(27017);
         when(sods.getString("host")).thenReturn("localhost");
         when(sods.get("port")).thenReturn(soport);
-        DataStoreMongo dsm = new DataStoreMongo(sods, mokedDataSource);
+        
+        DataStoreMongo dsm = new DataStoreMongo(sods);
         BasicDBObject bdbo = new BasicDBObject();
         BasicDBObject oldSet = (new BasicDBObject("name", "México")).append("iso2", "si");
         BasicDBObject newSet = (new BasicDBObject("name", "México")).append("iso2", "no");
         bdbo.append("data", oldSet);
-        dsm.add(bdbo);
+        dsm.add(bdbo,mokedDataSource);
         assertEquals("México", _mongo.getDB("TESTDB").getCollection("Country").findOne().get("name"));
-        BasicDBObject result = (BasicDBObject)((BasicDBList)((BasicDBObject)dsm.fetch(bdbo).get("response")).get("data")).get(0);
+        BasicDBObject result = (BasicDBObject)((BasicDBList)((BasicDBObject)dsm.fetch(bdbo,mokedDataSource).get("response")).get("data")).get(0);
         assertEquals("México",result.getString("name"));
         String id = result.getString("_id");
         bdbo.append("data", newSet);
         newSet.append("_id", id);
-        dsm.update(bdbo);
+        dsm.update(bdbo,mokedDataSource);
         bdbo.append("data", oldSet);
-        assertEquals(0, ((BasicDBList)((BasicDBObject)dsm.fetch(bdbo).get("response")).get("data")).size());
+        assertEquals(0, ((BasicDBList)((BasicDBObject)dsm.fetch(bdbo,mokedDataSource).get("response")).get("data")).size());
         bdbo.append("data", newSet);
         newSet.append("_id", id);
-        result = (BasicDBObject)((BasicDBList)((BasicDBObject)dsm.fetch(bdbo).get("response")).get("data")).get(0);
+        result = (BasicDBObject)((BasicDBList)((BasicDBObject)dsm.fetch(bdbo,mokedDataSource).get("response")).get("data")).get(0);
         assertNotEquals("si", result.getString("iso2"));
         assertEquals("no", result.getString("iso2"));
 //        System.out.println(newSet.get("_id")+" -> "+result.getString("_id"));
-        dsm.remove(bdbo);
-        assertEquals(0, ((BasicDBList)((BasicDBObject)dsm.fetch(bdbo).get("response")).get("data")).size());
+        dsm.remove(bdbo,mokedDataSource);
+        assertEquals(0, ((BasicDBList)((BasicDBObject)dsm.fetch(bdbo,mokedDataSource).get("response")).get("data")).size());
 //        
 //        System.out.println("result: "+ result);
 //        System.out.println("DBO_id:"+dsm.fetch(bdbo));
