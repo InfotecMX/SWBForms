@@ -1,6 +1,13 @@
 //En swblang.js
 //swbf.validators["email"] = {type:"regexp", expression:"^([a-zA-Z0-9_.\\-+])+@(([a-zA-Z0-9\\-])+\\.)+[a-zA-Z0-9]{2,4}$",errorMessage:"No es un correo electrónico válido"};
-swbf.dataStores["mongodb"].host="localhost";
+
+//swbf.dataStores["mongodb"].host="localhost";
+
+swbf.userRepository={
+    authModule:"swbforms",
+    dataStore:"mongodb",
+    modelid:"UserRep",
+};
 
 swbf.dataSources["ReportesVIN"] = {
     scls: "ReportesVIN",
@@ -12,11 +19,12 @@ swbf.dataSources["ReportesVIN"] = {
         {name: "area", title: "Area", required: true, type: "string",validators: [
             {
                 type:"serverCustom", 
-                serverCondition:function(name,value,request){              
-                    //print(swbf.getDataSource("Pais").fetch().response.data[0].nombre);
-                    return value=="jei 2";
+                serverCondition:function(name,value,request){  
+                    print("user:"+this.getUser());
+                    //print(this.getDataSource("Pais").fetch().response.data[0].nombre);
+                    return value=="jei 3";
                 },
-                errorMessage:"Error desde el servidor, el valor debe de ser jei 2"
+                errorMessage:"Error desde el servidor, el valor debe de ser jei 3"
             }
         ]},
         {name: "fecha", title: "Fecha", type: "date"},
@@ -27,6 +35,8 @@ swbf.dataSources["ReportesVIN"] = {
             canFilter:false, selectFields:[{name:"nombre"},{name:"lugarNacimiento"}], showFilter:true, dataSource:"Personal"},
         {name: "revisor", title: "Revisor", stype: "select", dataSource:"Personal"},
         {name: "direccion", title:"Dirección", stype:"grid", dataSource:"Direccion", width_:"90%", winEdit:{title:"Dirección"}},
+        {name: "auto", newline:true, title: "Automovil", required: true, type: "select" , multiple:true, valueMap:{1:"Audi",2:"Chevrolet",3:"Chrysler"} },
+        
     ],
     links: [
         {name: "direccion1", title:"Dirección 1", stype:"tab", dataSource:"Direccion"},
@@ -91,6 +101,21 @@ swbf.dataSources["Pais"] = {
     fields: [
         {name: "nombre", title: "Pais", required: true, type: "string"},
         {name: "abre", title: "Abre", required: true, type: "string"},
+        {name: "habitantes", title: "Habitantes", required: false, type: "int", validators: [                
+            {type:"integerRange", min:1000, max:100000000},            
+/**            
+            {
+                type:"serverCustom", 
+                serverCondition:function(name,value,request){
+                    print("request:"+request.data.nombre.length());
+                    if(value==(request.data.nombre.length()*1000))return true;
+                    //if(value>0 && (value%2)==0)return true;
+                    return false;
+                },
+                errorMessage:"El valor debe de ser par..."
+            }                
+*/                
+        ]},
     ]
 };
 
@@ -105,34 +130,62 @@ swbf.dataSources["Estado"] = {
     ]
 };
 
+swbf.dataSources["Minuta"] = {
+    scls: "Minuta",
+    modelid: "VINDB",
+    dataStore: "mongodb",    
+    displayField: "nombre",
+    fields: [
+        {name: "cliente", title: "Cliente", required: true, type: "string"},
+        {name: "proyecto", title: "Proyecto", required: true, type: "string"},
+        {name: "lugar", title: "Lugar", required: true, type: "string"},
+        {name: "responsable", title: "Responsable de Proyecto", required: true, type: "string"},
+        {name: "participantes", title: "participantes", required: true, stype: "select" , multiple:true, dataSource:"Personal"},
+        
+    ]
+};
+
 //*************************************** server ************************//
 
 swbf.dataServices["PaisService"] = {
     dataSources: ["Pais"],
     actions:["add","remove","update"],
-    service: function(request, response, user, dataSource, action)
+    service: function(request, response, dataSource, action)
     {
-        print("request:"+request);
-        print("response:"+response);
-        print("user:"+user);
-        print(swbf.getDataSource("Pais").fetch().response.data[0].nombre);
+        //print("request:"+request);
+        //print("response:"+response);
+        print("user:"+this.user._id);
+        print(this.getDataSource("Pais").fetchObjById("_suri:VINDB:Pais:53ca73153004aec988f550e2").nombre);
+        //print(this.getDataSource("Pais").fetch("{data:{abre : 'MX'}}"));
+        //print(this.getDataSource("Pais").fetch());
+        //print(this.getDataSource("Pais").fetch().response.data[0].nombre);
     }
 };
 
 swbf.dataProcessors["PaisProcessor"] = {
     dataSources: ["Pais"],
     actions:["add","update"],
-    request: function(request, user, dataSource, action)
+    request: function(request, dataSource, action)
     {
-        print("request:"+request);
-        print("user:"+user);
-        request.data.created=new java.util.Date();
+        print("action:"+action);
+        print("request1:"+request);
+        //print("user:"+this.getUser());
+        //request.data.created=new java.util.Date();
+        if(request.data.nombre)
+        {
+            request.data.habitantes=request.data.nombre.length()*1000+request.data.habitantes;
+        }else if(request.oldValues.nombre)
+        {
+            request.data.habitantes=request.oldValues.nombre.length()*1000+request.data.habitantes;
+        }
+            
+        print("request2:"+request);
         return request;
     },
-    response: function(response, user, dataSource, action)
+    response: function(response, dataSource, action)
     {
         print("response:"+response);
-        print("user:"+user);
+        //print("user:"+this.getUser());
         print(response.response.data.created);
         return response;
     }

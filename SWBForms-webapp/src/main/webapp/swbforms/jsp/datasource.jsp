@@ -1,5 +1,6 @@
 <%@page import="org.semanticwb.forms.script.*"%><%@page import="java.io.*"%><%@page import="com.mongodb.util.JSON"%><%@page import="org.bson.types.ObjectId"%><%@page import="com.mongodb.*"%><%@page import="java.util.*"%><%@page import="org.semanticwb.forms.*"%><%@page import="org.semanticwb.*"%><%@page contentType="text/xml" pageEncoding="UTF-8"%><%!
 //global
+
     BasicDBObject getOperation(BasicDBObject json, SWBScriptEngine engine, String dataSource) throws IOException
     {
         BasicDBObject ret=null;
@@ -51,6 +52,15 @@
     }
     
 %><%
+    
+    SWBUser user=(SWBUser)session.getAttribute("user");
+    if(user==null)
+    {
+        user=new SWBUser();
+        user.put("_id", "jei");        
+        session.setAttribute("user", user);
+    }
+    
     //init SWBPlatform
     if (SWBForms.getApplicationPath() == null)
     {
@@ -69,7 +79,7 @@
         
         String dssp = request.getParameter("dssp");    
         String ds = request.getParameter("ds");    
-        SWBScriptEngine engine=SWBScriptEngine.getScriptEngine(dssp);
+        SWBScriptEngine engine=SWBForms.getUserScriptEngine(dssp,user);
         //System.out.println("engine:"+engine);        
         
         

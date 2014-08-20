@@ -363,9 +363,33 @@ swbf.createGrid({left:"-10", margin:"10px", width: "100%", height: 200, initialC
 form.submitButton.setTitle("Enviar");
 
 
+    form.submitButton.setTitle("Siguiente");
+    form.submitButton.click = function(p1)
+    {
+        swbf.submit(p1.target.form, this, function()
+        {
+            window.location = "?p=<%=(p+1)%>&id=" + form.getData()._id;    
+        });
+        //window.location = "/es/imicam/resultados?&id=<%=id%>";
+        //return false;
+    };
+    
+    form.buttons.addMember(isc.IButton.create(
+            {
+                title: "Resultados",
+                padding: "10px",
+                click: function(p1) {
+                    window.location = "/es/imicam/resultados?id=<%=id%>";
+                    return false;
+                }
+            }));
+
+
 //Secciones en formas
 [
 {defaultValue:"1. MERCADOTECNIA", disabled:false, type:"section", sectionExpanded:true, itemIds: ["1","1_1", "1_2", "1_3", "1_4", "1_5","1_6"] },
 {name: "1", defaultValue:"1.1 Modernizacion del punto de venta: (1:Mal / Nunca,  2:Regular / Algunas Veces,  3:Bien / Casi Siempre,  4:Muy Bien / Siempre)", type:"Header"},
 ]
+
+
 

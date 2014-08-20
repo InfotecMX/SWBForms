@@ -3,6 +3,7 @@
     Created on : Dec 15, 2013, 5:30:59 PM
     Author     : javier.solis.g
 --%>
+<%@page import="org.semanticwb.forms.SWBUser"%>
 <%@page import="org.semanticwb.forms.SWBForms"%>
 <%@page import="org.semanticwb.forms.SWBDataSource"%>
 <%@page import="org.semanticwb.forms.SWBScriptEngine"%>
@@ -17,6 +18,14 @@
         <h1>Hello World!</h1>
         <pre>
 <%
+    SWBUser user=(SWBUser)session.getAttribute("user");
+    if(user==null)
+    {
+        user=new SWBUser();
+        user.put("_id", "jei");        
+        session.setAttribute("user", user);
+    }    
+    
     //init SWBPlatform
     if (SWBForms.getApplicationPath() == null)
     {
@@ -24,7 +33,7 @@
         SWBForms.createInstance(apppath);
     }         
     
-    SWBScriptEngine engine=SWBScriptEngine.getScriptEngine("/tests/VIN/datasources.js");    
+    SWBScriptEngine engine=SWBForms.getUserScriptEngine("/tests/VIN/datasources.js",user);    
     SWBDataSource ds=engine.getDataSource("ReportesVIN");
     out.println("DBName:"+ds.fetch());
     //out.println("DBName:"+ds.fetch("{data:{\"_id\" : \"_suri:VINDB:ReportesVIN:53b722f130041294cd1ee2c6\"}}"));
