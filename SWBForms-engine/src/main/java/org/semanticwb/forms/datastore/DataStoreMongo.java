@@ -21,18 +21,15 @@ import org.semanticwb.forms.script.ScriptObject;
  *
  * @author javiersolis
  */
-public class DataStoreMongo implements DataStore
+public class DataStoreMongo implements SWBDataStore
 {
-    private static MongoClient mongoClient=null;
-        
-    SWBDataSource base=null;
+    private MongoClient mongoClient=null;
     ScriptObject dataStore=null;
         
-    public DataStoreMongo(ScriptObject dataStore, SWBDataSource base) 
+    public DataStoreMongo(ScriptObject dataStore) 
     {
-        System.out.println("DataStoreMongo:"+dataStore);
+        //System.out.println("DataStoreMongo:"+dataStore);
         this.dataStore=dataStore;
-        this.base=base;         
         try
         {
             initDB();
@@ -57,12 +54,12 @@ public class DataStoreMongo implements DataStore
         }
     }
     
-    public BasicDBObject fetch(BasicDBObject json) throws IOException
+    public BasicDBObject fetch(BasicDBObject json, SWBDataSource dataSource) throws IOException
     {
 //        MongoClient mongoClient = new MongoClient("localhost");
         try
         {
-            ScriptObject dss=base.getDataSourceScript();        
+            ScriptObject dss=dataSource.getDataSourceScript();        
             String modelid=dss.getString("modelid");
             String scls=dss.getString("scls");
             DB db = mongoClient.getDB(modelid);
@@ -170,12 +167,12 @@ public class DataStoreMongo implements DataStore
         }
     }    
     
-    public BasicDBObject add(BasicDBObject json) throws IOException
+    public BasicDBObject add(BasicDBObject json, SWBDataSource dataSource) throws IOException
     {
 //        MongoClient mongoClient = new MongoClient("localhost");
         try
         {        
-            ScriptObject dss=base.getDataSourceScript();        
+            ScriptObject dss=dataSource.getDataSourceScript();        
             initDB();
             String modelid=dss.getString("modelid");
             String scls=dss.getString("scls");
@@ -205,12 +202,12 @@ public class DataStoreMongo implements DataStore
         }
     }
     
-    public BasicDBObject remove(BasicDBObject json) throws IOException
+    public BasicDBObject remove(BasicDBObject json, SWBDataSource dataSource) throws IOException
     {
 //        MongoClient mongoClient = new MongoClient("localhost");
         try
         {
-            ScriptObject dss=base.getDataSourceScript();        
+            ScriptObject dss=dataSource.getDataSourceScript();        
             initDB();
             String modelid=dss.getString("modelid");
             String scls=dss.getString("scls");
@@ -236,12 +233,12 @@ public class DataStoreMongo implements DataStore
         }
     }    
     
-    public BasicDBObject update(BasicDBObject json) throws IOException
+    public BasicDBObject update(BasicDBObject json, SWBDataSource dataSource) throws IOException
     {
 //        MongoClient mongoClient = new MongoClient("localhost");
         try
         {        
-            ScriptObject dss=base.getDataSourceScript();        
+            ScriptObject dss=dataSource.getDataSourceScript();        
             initDB();
             String modelid=dss.getString("modelid");
             String scls=dss.getString("scls");
@@ -273,8 +270,7 @@ public class DataStoreMongo implements DataStore
         {
 //            mongoClient.close();
         }
-    }        
-    
+    }            
     
     private DBObject copyDBObject(DBObject base, DBObject jobj)
     {

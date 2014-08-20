@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 
 /**
  *
@@ -56,9 +57,10 @@ public class SWBForms
     }
     
     
-    public static ScriptEngine getScriptEngine()
+    public static ScriptEngine getNativeScriptEngine()
     {
-        // create a JavaScript engine 
+        // create a JavaScript engine         
+        //System.out.println(new NashornScriptEngineFactory().getParameter("THREADING"));
         return factory.getEngineByName("JavaScript");           
     }
     
@@ -67,7 +69,7 @@ public class SWBForms
      * @param source
      * @param engine 
      */
-    public static ScriptEngine loadScript(String source, ScriptEngine engine) throws IOException, ScriptException
+    protected static ScriptEngine loadScript(String source, ScriptEngine engine) throws IOException, ScriptException
     {
         System.out.println("loadScript:"+source);        
         File f=new File(instance.applicationPath+source);
@@ -83,5 +85,11 @@ public class SWBForms
         return engine;
     }
     
+    public static SWBScriptEngine getUserScriptEngine(String source, SWBUser user)
+    {
+        SWBBaseScriptEngine engine=SWBBaseScriptEngine.getScriptEngine(source);
+        if(engine!=null)return new SWBUserScriptEngine(engine,user);
+        return null;
+    }    
     
 }

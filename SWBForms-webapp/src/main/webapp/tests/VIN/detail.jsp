@@ -37,7 +37,8 @@
                         {name: "hola", stype:"time"},
                         {name: "autor"},
                         {name: "revisor"},
-                        {name: "direccion", winEdit_: {title:"Hola", 
+                        {name: "auto"},
+                        {name: "direccion", winEdit: {title:"Hola", 
                             fields: [
                                 {name: "calle"},
                                 {name: "numero"},
@@ -48,7 +49,8 @@
                                 {name: "estado"}
                             ],
                             values:{calle:"calle3"},
-                        }, winEdit:false,   //deshabilitar winEdit del padre
+                        
+                        }, //winEdit:false,   //deshabilitar winEdit del padre
                             fields: [
                                 {name: "calle"},
                                 {name: "numero"},

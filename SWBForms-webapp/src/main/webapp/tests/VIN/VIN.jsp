@@ -29,9 +29,13 @@
                     width: "100%", 
                     height: 200, 
                     initialCriteria_:{abre:"MX"},
+                    fields_: [
+                        {name: "nombre"},
+                    ],
                     canEdit:true,
                     canRemove:true,
                     canAdd:true,
+                    winEdit:false,
                 }, "Pais");
             </script>          
         </div>     
@@ -43,9 +47,14 @@
                     fields: [
                         {name: "nombre", title: "Pais", required: true, type: "string"},
                         {name: "abre", title: "Abre", required: true, type: "string"},
-                        {name: "created", title: "Creación", type: "timeStamp"},
+                        {name: "created", title: "Creación", type: "date"},
                     ],
-                    canEdit:true,
+                    //canEdit:false,
+                    recordDoubleClick: function(grid, record)
+                    {
+                        window.location = "pais.jsp?dsName=Pais&_id=" + record._id;
+                        return false;
+                    },
                 }, "Pais");
             </script>          
         </div>          
@@ -54,6 +63,13 @@
             <h2 style="margin-right: 50px">Estado</h2>
             <script type="text/javascript">
                 swbf.createGrid({left:"-10", margin:"10px", width: "100%", height: 200}, "Estado");
+            </script>          
+        </div>     
+        
+        <div>
+            <h2 style="margin-right: 50px">Minutas</h2>
+            <script type="text/javascript">
+                swbf.createGrid({left:"-10", margin:"10px", width: "100%", height: 200}, "Minuta");
             </script>          
         </div>          
         

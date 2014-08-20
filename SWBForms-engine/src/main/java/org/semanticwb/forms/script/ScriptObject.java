@@ -8,10 +8,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import org.semanticwb.forms.SWBForms;
+import org.semanticwb.forms.SWBScriptEngine;
+import org.semanticwb.forms.SWBUserScriptEngine;
 
 /**
  *
@@ -143,7 +146,7 @@ public class ScriptObject
     
     public static ScriptObject parse(String script) throws ScriptException
     {        
-        ScriptEngine engine=SWBForms.getScriptEngine();
+        ScriptEngine engine=SWBForms.getNativeScriptEngine();
         return new ScriptObject(engine.eval(script));
     }
     
@@ -152,8 +155,13 @@ public class ScriptObject
         return new ScriptObject(engine.eval(script));
     }    
     
-    public ScriptObject invoke(Object... args)
+//    public ScriptObject invoke(Object... args)
+//    {
+//        return new ScriptObject(((ScriptObjectMirror)_obj).call(_obj, args));
+//    }
+    
+    public ScriptObject invoke(SWBScriptEngine b, Object... args)
     {
-        return new ScriptObject(((ScriptObjectMirror)_obj).call(_obj, args));
+        return new ScriptObject(((ScriptObjectMirror)_obj).call(b, args));
     }
 }

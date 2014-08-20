@@ -7,6 +7,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.semanticwb.forms.SWBForms;
 import org.semanticwb.forms.SWBScriptEngine;
+import org.semanticwb.forms.SWBUser;
 
 /**
  *
@@ -17,9 +18,12 @@ public class TestScriptObject {
     
     @Test
     public void test() throws ScriptException{
-        SWBForms.createInstance("src/test/resources");
         
-        SWBScriptEngine engine = SWBScriptEngine.getScriptEngine("/datasource/datasources.js");
+        SWBForms.createInstance("src/test/resources");
+        SWBUser user=new SWBUser();
+        user.put("_id", "jei");
+        
+        SWBScriptEngine engine = SWBForms.getUserScriptEngine("/datasource/datasources.js",user);
         ScriptObject so = new ScriptObject(engine.getNativeScriptEngine().get("swbf"));
         
         assertNotNull(so);
@@ -28,7 +32,7 @@ public class TestScriptObject {
         ScriptObject datasource = so.get("dataSources");
         assertNotNull(datasource);
         assertTrue(datasource.isScriptObject());
-        assertEquals(5, datasource.size());
+        assertEquals(6, datasource.size());
 //        for(String key:datasource.keySet()){
 //            ScriptObject so2 = datasource.get(key);
 //            if (so2.isScriptObject()) {

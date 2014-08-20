@@ -32,7 +32,7 @@ public class MongoTestEnv {
             started = true;
             _mongodExe = starter.prepare(new MongodConfigBuilder()
                 .version(Version.Main.PRODUCTION)
-                .net(new Net(27017, Network.localhostIsIPv6()))
+                .net(new Net(27018, Network.localhostIsIPv6()))
                 .build());
             _mongod = _mongodExe.start();
             Runtime.getRuntime().addShutdownHook(new Thread(){

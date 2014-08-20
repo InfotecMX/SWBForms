@@ -38,7 +38,9 @@ public class TestSWBDataSource {
     @Test
     public void test() throws IOException{
         SWBForms.createInstance("src/test/resources");
-        SWBScriptEngine engine = SWBScriptEngine.getScriptEngine("/datasource/datasources.js");
+        SWBUser user=new SWBUser();
+        user.put("_id", "jei");
+        SWBScriptEngine engine = SWBForms.getUserScriptEngine("/datasource/datasources.js",user);
         SWBDataSource datasource = engine.getDataSource("Pais");
         BasicDBObject bdbo = datasource.fetch();
         int basicSize= ((BasicDBObject)bdbo.get("response")).getInt("totalRows");

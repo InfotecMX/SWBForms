@@ -15,7 +15,9 @@ public class TestSWBScriptEngine {
     @Test
     public void test(){
         SWBForms.createInstance("src/test/resources");
-        SWBScriptEngine engine = SWBScriptEngine.getScriptEngine("/datasource/datasources.js");
+        SWBUser user=new SWBUser();
+        user.put("_id", "jei");        
+        SWBScriptEngine engine = SWBForms.getUserScriptEngine("/datasource/datasources.js",user);
         assertNotNull(engine);
         SWBDataSource datasource = engine.getDataSource("Pais");
         assertNotNull(datasource);
