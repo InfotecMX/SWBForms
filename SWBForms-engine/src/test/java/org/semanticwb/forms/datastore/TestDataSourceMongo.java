@@ -29,7 +29,7 @@ public class TestDataSourceMongo {
     @Before
     public void before() throws IOException{
         MongoTestEnv.startup();
-        _mongo=new MongoClient("localhost");
+        _mongo=new MongoClient("localhost",27018);
     }
     
     @Test
@@ -41,7 +41,7 @@ public class TestDataSourceMongo {
         when(sso.getString("scls")).thenReturn("Country");
         ScriptObject sods = mock(ScriptObject.class);
         ScriptObject soport = mock(ScriptObject.class);
-        when(soport.getValue()).thenReturn(27017);
+        when(soport.getValue()).thenReturn(27018);
         when(sods.getString("host")).thenReturn("localhost");
         when(sods.get("port")).thenReturn(soport);
         
